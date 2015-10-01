@@ -63,8 +63,7 @@ var Physics = Physics || {}
     });
     
     particle.fire();  
-    // setTimeout(this.trail.bind(this), 50);
-    setTimeout(this.trail.bind(this), 40);
+    setTimeout(this.trail.bind(this), TRAIL_PARTICLE_DELAY);
   }
   
   Ball.prototype.active = function() {
@@ -120,11 +119,15 @@ var Physics = Physics || {}
       this.body.state.vel.set(vxBall, JUMP_BY); // Force vy to be exactly the same no matter what  
       this.nextLyric();
       
-      if(platformCollider.idName == PLATFORM_TUTO) {
-        var vxPlatform = platformCollider.state.vel.x;
-        platformCollider.state.vel.set(vxPlatform, PLATFORM_SPEED);
-      }
+      // if(platformCollider.idName == PLATFORM_TUTO) {
+      //   var vxPlatform = platformCollider.state.vel.x;
+      //   platformCollider.state.vel.set(vxPlatform, PLATFORM_SPEED);
+      // }
       
+    }
+    
+    if(this.onAfterCollision) {
+      this.onAfterCollision();
     }
     
   }

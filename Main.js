@@ -23,6 +23,8 @@ var NB_BOXES = 1
 , FIREWORK = false
 , RADIUS_POINT = 10
 , RAINBOW_STEP = 10
+// , TRAIL_PARTICLE_DELAY = 50
+, TRAIL_PARTICLE_DELAY = 40
 // , GRAVITY = 0.0004
 // , JUMP_BY = -0.35
 // , GRAVITY = 0.0015
@@ -55,6 +57,7 @@ var NB_BOXES = 1
       .add('OogieBoogieMin', 'res/OogieBoogie/OogieBoogieMin.fnt')
       .add('youssy-ball', 'res/youssy-ball.png')
       .add('bg-cloud', 'res/bg-cloud.png')
+      .add('bg-record', 'res/bg-record.png')
       .add('pencil', 'res/pencil2.png')
       .add('line', 'res/line.png')
       .add('circle', 'res/circle2.png')
@@ -103,10 +106,12 @@ var NB_BOXES = 1
     worldManager.addUpdate(scroller.update.bind(scroller));
     
     var hasEnd = false;
+    var staticPlatforms = [];
     var tutorialScreen = new Game.TutorialScreen();
     
     // Le tutorial declenche la chute de la balle
     tutorialScreen.onClose = function() {
+      console.log('onclose tuto')
       hasEnd = false;
       colorTrailI = 0;
       ball.setTrail(0x000000);
@@ -125,6 +130,8 @@ var NB_BOXES = 1
       if(pos.y > height && !hasEnd) {
         nbParty++;
         hasEnd = true;
+        staticPlatforms = [];
+        
         ball.stop();
         
         worldManager.removeBodies('trampoline');
@@ -134,11 +141,34 @@ var NB_BOXES = 1
         scroller.stop();
       } 
     };
+    
+    function startStaticPlatform() {
+      if(!staticPlatforms.length) {
+        return;
+      }
+      
+      staticPlatforms.forEach(function(trampoline){
+        var vx = trampoline.state.vel.x;
+        trampoline.state.vel.set(vx, PLATFORM_SPEED);
+      });
+      staticPlatforms = [];
+    }
+    
+    ball.onAfterCollision = function() {
+      startStaticPlatform();  
+    }
+    
     worldManager.addUpdate(ball.update.bind(ball));
         
     // La création d'une plateforme déclenche la fin du tutoriel
     var platformMaker = new Game.PlatformMaker();
     platformMaker.onBuild = function(trampoline){
+      if(!trampoline.state.vel.y) {
+        staticPlatforms.push(trampoline);  
+      } else if(staticPlatforms.length) {
+        startStaticPlatform();
+      }
+      
       tutorialScreen.close();
     }
     

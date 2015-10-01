@@ -6,12 +6,19 @@ var Share = Resource.Share
 (function(exports) {
   var ALTITUDE_PADDING = 10;
   
-  // var colorSteps = [
-  //   0x000000,
-  //   0xf4ec1b,
-  // ];
-  
-  // var colorStepsI = 0;
+  var themes = [
+    null,       // 0
+    null,       // 1000
+    0x0bcff9,     // 2000 .. new color
+    0x0bcff9,     // 3000
+    0x0bf954,     // 4000 .. new color
+    0x0bf954,     // 5000
+    0x0bf943,     // 6000 .. new color
+    0x0bf943,     // 7000
+    0xf9910b,     // 8000 .. new Color
+    0xf9910b,     // 9000
+    0xffffff,         // 10000
+  ];
   
   function Scroller() {
     this.renderer = Share.get('renderer');
@@ -33,6 +40,17 @@ var Share = Resource.Share
     this.renderer.stage.addChild(this.altitudeText);
     this.steps = {};
     
+    
+    this.oriThemeColor = 0xFFFFFF;
+    this.themeLayer = new PIXI.Graphics();
+    this.themeLayer.color = this.oriThemeColor;
+    this.themeLayer.beginFill(this.themeLayer.color)
+    this.themeLayer.drawRect(0, 0, this.width, this.height);
+    this.themeLayer.endFill();
+    this.themeLayer.alpha = 0;
+    this.bg.addChild(this.themeLayer);
+    
+    
   }
   
   Scroller.prototype.update = function() {
@@ -52,33 +70,38 @@ var Share = Resource.Share
     
       
       // Well it's bad sorry
-      if(currentStep > 0 && !this.steps[currentStep]) {
-        var stage = Share.get('stage');
-        var sepTexture = Share.get('resources').sep.texture;
-        
-        if(this.sepContainer) {
-          stage.removeChild(this.sepContainer);
-        }
-        
-        this.sepContainer = new PIXI.Container();
-        this.sepContainer.alpha = 0.1;
-        
-        var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
-        sep.tint = 0x000000;
-       
-        var stepInd = currentStep * STEP_ALTITUDE;
-        var stepText = new PIXI.extras.BitmapText(stepInd + ' m', {
-          font: "30px OogieBoogie",
-          tint: 0x000000
-        });
-        stepText.position.set(10, 10);
-        
-        this.sepContainer.addChild(sep);
-        this.sepContainer.addChild(stepText);
-        
-        stage.addChildAt(this.sepContainer, 1);
+      if(!this.steps[currentStep]) {
         
         this.steps[currentStep] = true;
+        this.activeTheme(currentStep);
+        
+        if(currentStep > 0) {
+          var stage = Share.get('stage');
+          var sepTexture = Share.get('resources').sep.texture;
+          
+          if(this.sepContainer) {
+            stage.removeChild(this.sepContainer);
+          }
+          
+          this.sepContainer = new PIXI.Container();
+          this.sepContainer.alpha = 0.1;
+          
+          var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
+          sep.tint = 0x000000;
+        
+          var stepInd = currentStep * STEP_ALTITUDE;
+          var stepText = new PIXI.extras.BitmapText(stepInd + ' m', {
+            font: "30px OogieBoogie",
+            tint: 0x000000
+          });
+          stepText.position.set(10, 10);
+          
+          this.sepContainer.addChild(sep);
+          this.sepContainer.addChild(stepText);
+          
+          stage.addChildAt(this.sepContainer, 1);  
+        }
+        
         if(this.onStepReach) {
           this.onStepReach(currentStep);
         }
@@ -96,7 +119,6 @@ var Share = Resource.Share
     this.steps = {};
     this.altitude = 0;
     this.isActive = true;
-    // colorStepsI = 0;
   }
   
   Scroller.prototype.stop = function() {
@@ -111,6 +133,35 @@ var Share = Resource.Share
   Scroller.prototype.setViewportY = function(viewportY) {
     this.viewportY = viewportY;
     this.bg.tilePosition.y = viewportY;
+  }
+  
+  Scroller.prototype.activeTheme = function(step) {
+    if(!STEP_THEME) {
+      return;
+    }
+    var theme = themes[step];
+    var self = this;
+    
+    if(typeof themes[step] == 'undefined' && step > 0) {
+      theme = themes[themes.length-1];
+    }
+    
+    if(theme == null || typeof theme == 'undefined') {
+      
+      if(this.themeLayer.alpha) {
+        this.themeLayer.tint = this.oriThemeColor;
+        this.themeLayer.color = this.oriThemeColor;
+        
+        TweenMax.to(this.themeLayer, 0.2, {alpha: 0});  
+      }
+      
+    } else if(this.themeLayer.color != theme) {
+      TweenMax.to(this.themeLayer, 1, {alpha: 0.2, colorProps: {color: theme}, onUpdate: function(){
+        self.themeLayer.tint = parseInt(Util.Color.rgbToHex(self.themeLayer.color), 16);
+      }});
+      
+    }
+    
   }
   
   exports.Scroller = Scroller;

@@ -21,8 +21,10 @@ var Resource = Resource || {}
 var NB_BOXES = 1
 , DEBUG = false
 , FIREWORK = false
+, STEP_THEME = false
 , RADIUS_POINT = 10
 , RAINBOW_STEP = 10
+, ALPHA_TUTO = 0.4
 // , TRAIL_PARTICLE_DELAY = 50
 , TRAIL_PARTICLE_DELAY = 40
 // , GRAVITY = 0.0004
@@ -36,7 +38,6 @@ var NB_BOXES = 1
 , STEP_ALTITUDE = 1000
 , GARBAGE_TYPE = ['trampoline', 'particle']
 , PLATFORM_TUTO = 'tuto'
-// , PLATFORM_SPEED = SCROLL_SPEED/12;
 , PLATFORM_SPEED = SCROLL_SPEED/13; // ok
 // , PLATFORM_SPEED = 0;
 
@@ -111,7 +112,6 @@ var NB_BOXES = 1
     
     // Le tutorial declenche la chute de la balle
     tutorialScreen.onClose = function() {
-      console.log('onclose tuto')
       hasEnd = false;
       colorTrailI = 0;
       ball.setTrail(0x000000);

@@ -186,7 +186,7 @@ var Share = Resource.Share || {}
      */
     
     this.tlTuto = new TimelineMax();
-    this.tlTuto.to(bg, 1, {alpha: 0.4}, 'start');
+    this.tlTuto.to(bg, 1, {alpha: ALPHA_TUTO}, 'start');
     this.tlTuto.staggerTo(toStagger, 0.8, {x: 1, y: 1, ease: Elastic.easeOut}, 0.1, 'start+=0.3');
     this.tlTuto.to(this.youss.position, 0.2, {y: '-=' + this.youss.height});
     this.tlTuto.to(this.bubbleDial, 0.1, {alpha: 1}, '-=0.1');
@@ -204,6 +204,7 @@ var Share = Resource.Share || {}
     this.tlPlatformMaker.to(rightCircle.position, bridgeDuration, {x: '+=' + bridgeWidth}, 'start'); 
     this.tlPlatformMaker.to(pencil.position, bridgeDuration, {y: '+=3', x: '+=' + pencilDestX}, 'start'); 
     this.tlPlatformMaker.to(pencil, bridgeDuration, {rotation: degToRad(-70)}, 'start'); 
+    
     
   }
   

@@ -1,0 +1,14 @@
+html, body{
+  background-color: #171717;
+  color:#878787;
+  padding:0;
+  margin:0;
+  height:100%;
+  width:100%;
+  overflow-y: hidden;
+}
+
+
+.pjs-meta {
+  position: absolute;
+}

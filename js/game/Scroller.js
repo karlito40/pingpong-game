@@ -74,6 +74,9 @@ var Share = Resource.Share
         
         this.steps[currentStep] = true;
         this.activeTheme(currentStep);
+        if(this.onStepReach) {
+          this.onStepReach(currentStep);
+        }
         
         if(currentStep > 0) {
           var stage = Share.get('stage');
@@ -102,9 +105,6 @@ var Share = Resource.Share
           stage.addChildAt(this.sepContainer, 1);  
         }
         
-        if(this.onStepReach) {
-          this.onStepReach(currentStep);
-        }
       }
       
       
@@ -162,6 +162,10 @@ var Share = Resource.Share
       
     }
     
+  }
+  
+  Scroller.prototype.getAltitude = function() {
+    return this.altitude;
   }
   
   exports.Scroller = Scroller;

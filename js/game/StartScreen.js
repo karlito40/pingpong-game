@@ -3,7 +3,8 @@
 var Share = Resource.Share || {}
 , PIXI = PIXI || {}
 , TimelineMax = TimelineMax || {}
-, TweenMax = TweenMax || {};
+, TweenMax = TweenMax || {}
+, Sys = Sys || {};
 
 (function(exports){
   
@@ -11,14 +12,16 @@ var Share = Resource.Share || {}
     return deg*PIXI.DEG_TO_RAD;
   }
     
-  function TutorialScreen() {
+  function StartScreen() {
     this.onClose = null;
     this.stage = Share.get('stage');
     this.isActive = false;
     
   }
   
-  TutorialScreen.prototype.start = function() {
+  StartScreen.prototype.start = function() {
+    this.record = Sys.Storage.get('altitudeRecord') || 0;
+    this.nbGame = Sys.Storage.get('nbGame') || 0;
     
     this.isActive = true; 
     
@@ -61,24 +64,64 @@ var Share = Resource.Share || {}
     
     
     this.container.addChild(this.logoContainer);
+ 
+    // Record
+    this.recordContainer = new PIXI.Container();
+    this.recordContainer.position.y = 15;
     
-    // Consigne
+    var recordBgTexture = Share.get('resources')['bg-record'].texture;
+    var recordBg = new PIXI.extras.TilingSprite(recordBgTexture, 80, 23);
     
-    // this.tipText = new PIXI.Container();
-    // this.tipText = new PIXI.extras.BitmapText('Protect youss !', {
-    //   font: "30px OogieBoogie",
-    //   tint: 0x000000
-    // });
-    // this.tipText.alpha = 0;
+    this.recordContainer.addChild(recordBg);
     
-    // this.tipText.position.x = width/2 - this.tipText.width/2 - 100;
-    // this.tipText.position.y = 280;
-    // this.container.addChild(this.tipText);
+    var recordText = new PIXI.extras.BitmapText(this.record.toString(), {
+      font: "15px OogieBoogieMin"
+    });
+    recordText.position.x = this.recordContainer.width - recordText.width - 25;    
     
+    this.recordContainer.addChild(recordText);
+    
+    var ballTexture = Share.get('resources')['youssy-ball'].texture;
+    var recordIco = new PIXI.Sprite(ballTexture);
+    recordIco.scale.set(0.6);
+    recordIco.position.y = -5;
+    recordIco.position.x = this.recordContainer.width - 20;
+    
+    this.recordContainer.addChild(recordIco);
+    
+    
+    this.container.addChild(this.recordContainer);
+
+    // Party 
+    this.nbGameContainer = new PIXI.Container();
+    this.nbGameContainer.position.y = 50;
+    
+    var nbGameTexture = Share.get('resources')['bg-party'].texture;
+    var nbGameBg = new PIXI.extras.TilingSprite(nbGameTexture, 60, 23);
+    
+    this.nbGameContainer.addChild(nbGameBg);
+    
+    var nbGameText = new PIXI.extras.BitmapText(this.nbGame.toString(), {
+      font: "15px OogieBoogieMin"
+    });
+    nbGameText.position.x = this.nbGameContainer.width - nbGameText.width - 25;    
+    
+    this.nbGameContainer.addChild(nbGameText);
+    
+    var ballTexture = Share.get('resources')['youssy-ball'].texture;
+    var nbGameIco = new PIXI.Sprite(ballTexture);
+    nbGameIco.scale.set(0.6);
+    nbGameIco.position.y = -5;
+    nbGameIco.position.x = this.nbGameContainer.width - 20;
+    
+    this.nbGameContainer.addChild(nbGameIco);
+    
+    this.container.addChild(this.nbGameContainer);
+ 
+ 
     // Building bridge
     var circleTexture = Share.get('resources').circle.texture;
     var lineTexture = Share.get('resources').line.texture;
-    
     
     var bridgeWidth = 150;    
     
@@ -144,19 +187,7 @@ var Share = Resource.Share || {}
     this.bubbleDial.alpha = 0;
     
     var s = 'Reach the sky';
-    // if(dialWidth < 150) {
-    //   s = 'Reach the \nsky';
-    // }
-    // this.dialText = new PIXI.extras.BitmapText("Youssoupha's in da place !\n Yes papa ! Let's sing :)", {
-    // this.dialText = new PIXI.extras.BitmapText(s, {
-    //   font: "17px OogieBoogieMin",
-    //   wordWrap: true,
-    //   wordWrapWidth: dialWidth - 50,
-    //   maxWidth: 100,
-    //   // align: 'center',
-    //   tint: 0x000000
-    // });
-    
+
     this.dialText = new PIXI.Text(s, {
       font: "17px Arial",
       wordWrap: true,
@@ -167,15 +198,6 @@ var Share = Resource.Share || {}
     this.dialText.position.y = 10;
     this.bubbleDial.addChild(this.dialText);
     
-    // var staggerTextDial = [];
-    // this.dialText.children.forEach(function(letter) {
-    //   letter.alpha = 0;
-    //   // letter.pivot.set(letter.width/2, 0)
-    //   // letter.pivot.set(letter.width/2, letter.height/2)
-    //   letter.rotation = degToRad(180);
-    //   staggerTextDial.push(letter)
-    // });
-    
     this.container.addChild(this.bubbleDial);
     
     
@@ -185,15 +207,24 @@ var Share = Resource.Share || {}
      * animation
      */
     
+    
+    this.nbGameContainer.position.x = -100;
+    this.recordContainer.position.x = -100;
+    
     this.tlTuto = new TimelineMax();
     this.tlTuto.to(bg, 1, {alpha: ALPHA_TUTO}, 'start');
+    
     this.tlTuto.staggerTo(toStagger, 0.8, {x: 1, y: 1, ease: Elastic.easeOut}, 0.1, 'start+=0.3');
     this.tlTuto.to(this.youss.position, 0.2, {y: '-=' + this.youss.height});
     this.tlTuto.to(this.bubbleDial, 0.1, {alpha: 1}, '-=0.1');
     this.tlTuto.to(this.bubbleDial.position, 0.2, {y: '-=50'}, '-=0.15');
     this.tlTuto.to(this.bubbleDial, 1, {rotation: 0, ease: Elastic.easeOut}, '-=0.2');
     // this.tlTuto.staggerTo(staggerTextDial, 0.3, {rotation: degToRad(0), alpha: 1}, 0.03, '-=0.7');
-    
+    this.tlTuto.staggerTo([
+      this.recordContainer.position, 
+      this.nbGameContainer.position
+    // ], 1, {x: 0, ease: Bounce.easeOut}, 0.2, 'start+=0.2');
+    ], 0.5, {x: -10, ease: Back.easeOut}, 0.2, '-=0.2');
     
     var pencilDestX = bridgeWidth + pencil.width/2 + 13;
     
@@ -208,7 +239,7 @@ var Share = Resource.Share || {}
     
   }
   
-  TutorialScreen.prototype.close = function() {
+  StartScreen.prototype.close = function() {
     var self = this;
     
     if(!this.isActive) {
@@ -229,6 +260,10 @@ var Share = Resource.Share || {}
     
     var tl = new TimelineMax();
     tl.to(this.logoContainer.position, 0.3, {y: -300}, 'start');
+    tl.to([
+      this.recordContainer.position,
+      this.nbGameContainer.position
+    ], 0.3, {x: -100}, 'start');
     tl.to([this.youss.position, this.bubbleDial.position], 0.3, {y: '+=' + this.youss.height}, 'start');
     tl.to(this.container, 0.6, {alpha: 0});
     
@@ -243,5 +278,5 @@ var Share = Resource.Share || {}
     }
   }
   
-  exports.TutorialScreen = TutorialScreen; 
+  exports.StartScreen = StartScreen; 
 })(window.Game = window.Game || {})

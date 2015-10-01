@@ -11,20 +11,21 @@
  */
 
 var Resource = Resource || {}
+, Sys = Sys || {}
 , Game = Game || {}
 , PIXI = PIXI || {}
-, Style = Resource.StyleSheet;
+, Style = Resource.StyleSheet
+, Storage = Sys.Storage;
 
 /**
  * Constants
  */
 var NB_BOXES = 1
-, DEBUG = false
-, FIREWORK = false
-, STEP_THEME = false
-, RADIUS_POINT = 10
-, RAINBOW_STEP = 10
-, ALPHA_TUTO = 0.4
+, DEBUG = false             // Display Fps
+, FIREWORK = false          // Firework on new step
+, STEP_THEME = false        // Color on new step
+, RAINBOW_STEP = 10         // At which step the rainbow mode will be fire
+, ALPHA_TUTO = 0.4          // Alpha of the tuto popup
 // , TRAIL_PARTICLE_DELAY = 50
 , TRAIL_PARTICLE_DELAY = 40
 // , GRAVITY = 0.0004
@@ -59,6 +60,7 @@ var NB_BOXES = 1
       .add('youssy-ball', 'res/youssy-ball.png')
       .add('bg-cloud', 'res/bg-cloud.png')
       .add('bg-record', 'res/bg-record.png')
+      .add('bg-party', 'res/bg-party.png')
       .add('pencil', 'res/pencil2.png')
       .add('line', 'res/line.png')
       .add('circle', 'res/circle2.png')
@@ -77,10 +79,11 @@ var NB_BOXES = 1
     var scroller = new Game.Scroller();
     
     scroller.onStepReach = function(step) {
+      ball.rainbowMode = (step >= RAINBOW_STEP);
       if(!step) {
         return;
       }
-      ball.rainbowMode = (step >= RAINBOW_STEP);
+      
       var color = 0x000000;
       if(!colorTrail[colorTrailI]) {
         colorTrailI = 0;
@@ -108,17 +111,17 @@ var NB_BOXES = 1
     
     var hasEnd = false;
     var staticPlatforms = [];
-    var tutorialScreen = new Game.TutorialScreen();
+    var startScreen = new Game.StartScreen();
     
     // Le tutorial declenche la chute de la balle
-    tutorialScreen.onClose = function() {
+    startScreen.onClose = function() {
       hasEnd = false;
       colorTrailI = 0;
       ball.setTrail(0x000000);
       ball.active();
       scroller.active();
     }
-    tutorialScreen.start();
+    startScreen.start();
     
     var ball = new Game.Ball();
     
@@ -128,17 +131,33 @@ var NB_BOXES = 1
     var nbParty = 1;
     ball.onMove = function(pos) {
       if(pos.y > height && !hasEnd) {
+        
         nbParty++;
+        
         hasEnd = true;
         staticPlatforms = [];
         
+        scroller.stop();
         ball.stop();
-        
         worldManager.removeBodies('trampoline');
         
-        tutorialScreen.start();
+        Storage.set('nbGame', nbParty);
+        
+        var currentAltitude = scroller.getAltitude();
+        console.log('currentAltitude', currentAltitude)
+        var altitudeRecord = Storage.get('altitudeRecord');
+        if(!altitudeRecord || altitudeRecord < currentAltitude) {
+          console.log('set altitude', currentAltitude)
+          Storage.set('altitudeRecord', currentAltitude);      
+        }
+        
+        startScreen.start();
         platformMaker.reset();
-        scroller.stop();
+        
+        
+        
+        
+        
       } 
     };
     
@@ -169,7 +188,7 @@ var NB_BOXES = 1
         startStaticPlatform();
       }
       
-      tutorialScreen.close();
+      startScreen.close();
     }
     
     worldManager.addEvents([

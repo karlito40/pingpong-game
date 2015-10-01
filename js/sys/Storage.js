@@ -22,7 +22,8 @@
       var val = SystemStorage.getItem(key);
       var o = JSON.parse(val);
       
-      if(o._lonely) {
+      
+      if(o && o._lonely) {
         return o._lonely;
       }
       

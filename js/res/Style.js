@@ -10,7 +10,7 @@
   
     line: {
       strokeStyle: 0x3e5060,
-      lineWidth: 6
+      lineWidth: 4
     },
     
     font: {

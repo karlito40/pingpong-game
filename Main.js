@@ -29,7 +29,7 @@ var NB_BOXES = 1
 , ALPHA_TUTO = 0.25                  // Alpha of the tuto popup
 , ANIM_BALL_ON_HIT = true
 // , TRAIL_PARTICLE_DELAY = 50
-, TRAIL_PARTICLE_DELAY = 40
+, TRAIL_PARTICLE_DELAY = 70
 // , GRAVITY = 0.0004
 // , JUMP_BY = -0.35
 // , GRAVITY = 0.0015
@@ -41,7 +41,8 @@ var NB_BOXES = 1
 , STEP_ALTITUDE = 1000
 , GARBAGE_TYPE = ['trampoline', 'particle']
 , PLATFORM_TUTO = 'tuto'
-, PLATFORM_SPEED = SCROLL_SPEED/13; // ok
+// , PLATFORM_SPEED = SCROLL_SPEED/13; // ok
+, PLATFORM_SPEED = SCROLL_SPEED/10; // ok
 // , PLATFORM_SPEED = 0;
 
 
@@ -82,7 +83,7 @@ var NB_BOXES = 1
     
     
     function fireworkAlSuperGay() {
-      var nbParticles = 50;
+      var nbParticles = 10;
       for(var i=0; i<nbParticles; i++) {
         var x = ~~(Math.random() * width);
         var y = height;

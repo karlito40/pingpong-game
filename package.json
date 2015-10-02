@@ -1,0 +1,26 @@
+{
+  "name": "jump",
+  "version": "1.0.0",
+  "description": "![YoussyBall](https://d13yacurqjgara.cloudfront.net/users/729829/screenshots/2249241/ping-pong.gif)",
+  "main": "Main.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "express": "^4.13.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/karlito40/pingpong-game.git"
+  },
+  "author": "Karlito40 <karlito40@gmail.com> (https://github.com/karlito40)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/karlito40/pingpong-game/issues"
+  },
+  "homepage": "https://github.com/karlito40/pingpong-game#readme"
+}

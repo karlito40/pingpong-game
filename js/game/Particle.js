@@ -66,7 +66,8 @@ var PIXI = PIXI || {}
       var dist = ~~(Math.random()*100)+50;
       
       var tl = new TimelineMax();
-      var duration = Math.random()+0.1;
+      // var duration = Math.random()+0.1;
+      var duration = Math.random()+0.5;
       tl.to(this.circle.position, duration, {
         y: '-=' + dist,
         ease: Power3.easeOut

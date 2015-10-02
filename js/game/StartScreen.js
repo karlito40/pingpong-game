@@ -7,10 +7,6 @@ var Share = Resource.Share || {}
 , Sys = Sys || {};
 
 (function(exports){
-  
-  function degToRad(deg) {
-    return deg*PIXI.DEG_TO_RAD;
-  }
     
   function StartScreen() {
     this.onClose = null;
@@ -183,7 +179,7 @@ var Share = Resource.Share || {}
     this.bubbleDial.position.x = dialX;
     this.bubbleDial.position.y = height - this.youss.height + 70;
     
-    this.bubbleDial.rotation = degToRad(40);
+    this.bubbleDial.rotation = Util.Math2.degToRad(40);
     this.bubbleDial.alpha = 0;
     
     var s = 'Reach the sky';
@@ -228,13 +224,20 @@ var Share = Resource.Share || {}
     
     var pencilDestX = bridgeWidth + pencil.width/2 + 13;
     
+    this.platform = [
+      line,
+      rightCircle,
+      leftCircle,
+      pencil
+    ];
+    
     // Animation platform maker
     var bridgeDuration = 0.7;
     this.tlPlatformMaker = new TimelineMax({repeat: -1, repeatDelay: 0.5});
     this.tlPlatformMaker.to(line, bridgeDuration, {width: bridgeWidth}, 'start'); 
     this.tlPlatformMaker.to(rightCircle.position, bridgeDuration, {x: '+=' + bridgeWidth}, 'start'); 
     this.tlPlatformMaker.to(pencil.position, bridgeDuration, {y: '+=3', x: '+=' + pencilDestX}, 'start'); 
-    this.tlPlatformMaker.to(pencil, bridgeDuration, {rotation: degToRad(-70)}, 'start'); 
+    this.tlPlatformMaker.to(pencil, bridgeDuration, {rotation: Util.Math2.degToRad(-70)}, 'start'); 
     
     
   }
@@ -260,6 +263,7 @@ var Share = Resource.Share || {}
     
     var tl = new TimelineMax();
     tl.to(this.logoContainer.position, 0.3, {y: -300}, 'start');
+    tl.to(this.platform, 0.15, {alpha:0}, 'start');
     tl.to([
       this.recordContainer.position,
       this.nbGameContainer.position

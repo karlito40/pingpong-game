@@ -39,7 +39,7 @@ var Share = Resource.Share
     this.renderer.stage.addChild(this.bg);
     this.renderer.stage.addChild(this.altitudeText);
     this.steps = {};
-    
+    this.hasRecordDisplay = false;
     
     this.oriThemeColor = 0xFFFFFF;
     this.themeLayer = new PIXI.Graphics();
@@ -66,7 +66,43 @@ var Share = Resource.Share
         this.sepContainer.position.y += SCROLL_SPEED;
       }
       
+      if(this.recordSepContainer) {
+        this.recordSepContainer.position.y += SCROLL_SPEED;
+      }
+      
+      
+      
       var currentStep = Math.floor(this.altitude/STEP_ALTITUDE);
+      
+      if(this.record
+        && this.altitude >= this.record 
+        && !this.hasRecordDisplay
+        && Math.floor(this.altitude/STEP_ALTITUDE) == currentStep
+      ) {
+        
+        this.recordSepContainer = new PIXI.Container();
+        
+        var sepTexture = Share.get('resources').sep.texture;
+        var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
+        sep.tint = 0x000000;
+        var stepText = new PIXI.extras.BitmapText('RECORD', {
+          font: "30px OogieBoogie",
+          // tint: 0xee1198
+          tint: 0x000000
+        });
+        stepText.position.set(10, 10);
+        
+        this.recordSepContainer.addChild(sep);
+        this.recordSepContainer.addChild(stepText);
+        
+        Share.get('stage').addChildAt(this.recordSepContainer, 1);
+        
+        this.hasRecordDisplay = true;
+        
+        if(this.onRecord) {
+          this.onRecord();
+        }
+      }
     
       
       // Well it's bad sorry
@@ -117,8 +153,10 @@ var Share = Resource.Share
   
   Scroller.prototype.active = function() {
     this.steps = {};
+    this.hasRecordDisplay = false;
     this.altitude = 0;
     this.isActive = true;
+    this.record = Sys.Storage.get('altitudeRecord');
   }
   
   Scroller.prototype.stop = function() {
@@ -127,6 +165,13 @@ var Share = Resource.Share
       stage.removeChild(this.sepContainer);
       this.sepContainer = null;
     }
+    
+    if(this.recordSepContainer) {
+      var stage = Share.get('stage');
+      stage.removeChild(this.recordSepContainer);
+      this.recordSepContainer = null;
+    }
+    
     this.isActive = false;
   }
   

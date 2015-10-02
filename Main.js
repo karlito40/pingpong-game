@@ -21,11 +21,13 @@ var Resource = Resource || {}
  * Constants
  */
 var NB_BOXES = 1
-, DEBUG = false             // Display Fps
-, FIREWORK = false          // Firework on new step
-, STEP_THEME = false        // Color on new step
-, RAINBOW_STEP = 10         // At which step the rainbow mode will be fire
-, ALPHA_TUTO = 0.4          // Alpha of the tuto popup
+, DEBUG = false                     // Display Fps
+, FIREWORK_ON_STEP = false          // Firework on new step
+, FIREWORK_ON_RECORD = true         // Firework on new record
+, STEP_THEME = false                // Color on new step
+, RAINBOW_STEP = 10                 // At which step the rainbow mode will be fire
+, ALPHA_TUTO = 0.25                  // Alpha of the tuto popup
+, ANIM_BALL_ON_HIT = true
 // , TRAIL_PARTICLE_DELAY = 50
 , TRAIL_PARTICLE_DELAY = 40
 // , GRAVITY = 0.0004
@@ -78,6 +80,21 @@ var NB_BOXES = 1
   
     var scroller = new Game.Scroller();
     
+    
+    function fireworkAlSuperGay() {
+      var nbParticles = 50;
+      for(var i=0; i<nbParticles; i++) {
+        var x = ~~(Math.random() * width);
+        var y = height;
+        var p = new Game.Particle(x, y, {
+          radius: ~~(Math.random() * 20) + 20, 
+          rainbow: true
+        });
+        p.fire('drop');
+        
+      }
+    }
+    
     scroller.onStepReach = function(step) {
       ball.rainbowMode = (step >= RAINBOW_STEP);
       if(!step) {
@@ -92,18 +109,14 @@ var NB_BOXES = 1
       
       ball.setTrail(color);
       
-      if(FIREWORK) {
-        var nbParticles = 50;
-        for(var i=0; i<nbParticles; i++) {
-          var x = ~~(Math.random() * width);
-          var y = height;
-          var p = new Game.Particle(x, y, {
-            radius: ~~(Math.random() * 20) + 20, 
-            rainbow: true
-          });
-          p.fire('drop');
-          
-        }  
+      if(FIREWORK_ON_STEP) {
+        fireworkAlSuperGay();
+      }
+    };
+    
+    scroller.onRecord = function() {
+      if(FIREWORK_ON_RECORD) {
+        fireworkAlSuperGay();
       }
     };
     
@@ -144,19 +157,13 @@ var NB_BOXES = 1
         Storage.set('nbGame', nbParty);
         
         var currentAltitude = scroller.getAltitude();
-        console.log('currentAltitude', currentAltitude)
         var altitudeRecord = Storage.get('altitudeRecord');
         if(!altitudeRecord || altitudeRecord < currentAltitude) {
-          console.log('set altitude', currentAltitude)
           Storage.set('altitudeRecord', currentAltitude);      
         }
         
         startScreen.start();
         platformMaker.reset();
-        
-        
-        
-        
         
       } 
     };

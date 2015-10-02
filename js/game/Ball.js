@@ -3,7 +3,8 @@
 var Physics = Physics || {}
 , Share = Resource.Share
 , TimelineMax = TimelineMax || {}
-, TweenMax = TweenMax || {};
+, TweenMax = TweenMax || {}
+, Lyrics = Resource.Lyrics;
 
 (function(exports){
   
@@ -54,6 +55,11 @@ var Physics = Physics || {}
     this.body.state.pos.x = this.renderer.width/2;
     this.body.state.pos.y = 210;
     
+    if(this.tlSong) {
+      this.tlSong.clear();
+      this.tlSong = null;
+      Share.get('stage').removeChild(this.titleText);
+    }
   }
   
   Ball.prototype.trail = function() {
@@ -71,6 +77,41 @@ var Physics = Physics || {}
     this.body.view.scale.set(1, 1);
     this.lineLyric = 0;
     this.body.treatment = 'dynamic';
+    
+    // it shouldn't be there
+    var widthScene = Share.get('width');
+    var heightScene = Share.get('height');
+    
+    var artist = Lyrics[~~(Math.random()*Lyrics.length)];
+    var songs = artist.songs;
+    this.song = songs[~~(Math.random()*songs.length)];
+    
+    var title = this.song.title.toUpperCase();
+    this.titleText = new PIXI.extras.BitmapText(title, {
+      font: "100px OogieBoogie",
+      tint: 0x000000
+    });
+    this.titleText.position.x = widthScene - this.titleText.height/2;
+    // this.titleText.position.y = -heightScene/2;
+    this.titleText.position.y = -heightScene;
+    this.titleText.pivot.set(this.titleText.width/2, this.titleText.height/2);
+    
+    this.titleText.rotation = Util.Math2.degToRad(-90);
+    
+    var stage = Share.get('stage');
+    stage.addChildAt(this.titleText, 1);
+    
+    this.tlSong = new TimelineMax({delay: 0.5});
+    this.tlSong.to(this.titleText.position, 4, {
+      y: heightScene + this.titleText.width/2, 
+      ease: Linear.easeNone
+    });
+    
+    var self = this;
+    this.tlSong.call(function(){
+      stage.removeChild(self.titleText);
+    });
+    
   }
   
   Ball.prototype.getBody = function() {
@@ -136,13 +177,12 @@ var Physics = Physics || {}
     
     this.lastCollisionTime = now;
     
-    var onSeConnait = Resource.Lyrics.onSeConnait;
-    if(!this.lineLyric || !onSeConnait[this.lineLyric]) {
+    if(!this.lineLyric || !this.song.lines[this.lineLyric]) {
       this.lineLyric = 0;
     }
     
     var widthScene = Share.get('width');
-    var onomatope = onSeConnait[this.lineLyric];
+    var onomatope = this.song.lines[this.lineLyric];
     
     var text = new PIXI.extras.BitmapText(onomatope, {
       font: "30px OogieBoogie"

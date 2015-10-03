@@ -42,7 +42,7 @@ var Physics = Physics || {}
     
     
     this.stop();
-    this.trail();
+    // this.trail();
     
   }
   
@@ -79,40 +79,40 @@ var Physics = Physics || {}
     this.body.treatment = 'dynamic';
     
     // it shouldn't be there
-    var widthScene = Share.get('width');
-    var heightScene = Share.get('height');
+    // var widthScene = Share.get('width');
+    // var heightScene = Share.get('height');
     
-    this.lineLyric = 0;
+    // this.lineLyric = 0;
     
-    var artist = Lyrics[~~(Math.random()*Lyrics.length)];
-    var songs = artist.songs;
-    this.song = songs[~~(Math.random()*songs.length)];
+    // var artist = Lyrics[~~(Math.random()*Lyrics.length)];
+    // var songs = artist.songs;
+    // this.song = songs[~~(Math.random()*songs.length)];
     
-    var title = this.song.title.toUpperCase();
-    this.titleText = new PIXI.extras.BitmapText(title, {
-      font: "100px OogieBoogie",
-      tint: 0x000000
-    });
-    this.titleText.position.x = widthScene - this.titleText.height/2;
-    // this.titleText.position.y = -heightScene/2;
-    this.titleText.position.y = -heightScene;
-    this.titleText.pivot.set(this.titleText.width/2, this.titleText.height/2);
+    // var title = this.song.title.toUpperCase();
+    // this.titleText = new PIXI.extras.BitmapText(title, {
+    //   font: "100px OogieBoogie",
+    //   tint: 0x000000
+    // });
+    // this.titleText.position.x = widthScene - this.titleText.height/2;
+    // // this.titleText.position.y = -heightScene/2;
+    // this.titleText.position.y = -heightScene;
+    // this.titleText.pivot.set(this.titleText.width/2, this.titleText.height/2);
     
-    this.titleText.rotation = Util.Math2.degToRad(-90);
+    // this.titleText.rotation = Util.Math2.degToRad(-90);
     
-    var stage = Share.get('stage');
-    stage.addChildAt(this.titleText, 1);
+    // var stage = Share.get('stage');
+    // stage.addChildAt(this.titleText, 1);
     
-    this.tlSong = new TimelineMax({delay: 0.5});
-    this.tlSong.to(this.titleText.position, 4, {
-      y: heightScene + this.titleText.width/2, 
-      ease: Linear.easeNone
-    });
+    // this.tlSong = new TimelineMax({delay: 0.5});
+    // this.tlSong.to(this.titleText.position, 4, {
+    //   y: heightScene + this.titleText.width/2, 
+    //   ease: Linear.easeNone
+    // });
     
-    var self = this;
-    this.tlSong.call(function(){
-      stage.removeChild(self.titleText);
-    });
+    // var self = this;
+    // this.tlSong.call(function(){
+    //   stage.removeChild(self.titleText);
+    // });
     
   }
   
@@ -160,7 +160,7 @@ var Physics = Physics || {}
       
       var vxBall = this.body.state.vel.x;
       this.body.state.vel.set(vxBall, JUMP_BY); // Force vy to be exactly the same no matter what  
-      this.nextLyric();
+      // this.nextLyric();
     }
     
     if(this.onAfterCollision) {

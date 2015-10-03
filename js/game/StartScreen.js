@@ -38,7 +38,7 @@ var Share = Resource.Share || {}
     this.container.addChild(bg);
     
     this.logoContainer = new PIXI.Container();
-    var youssyText = new PIXI.extras.BitmapText("Youssy", {font: "60px OogieBoogie"});
+    var youssyText = new PIXI.extras.BitmapText("Scribble", {font: "60px OogieBoogie"});
     youssyText.position.x = Share.get('width')/2 - youssyText.width/2;
     youssyText.position.y = 50;
     
@@ -153,48 +153,47 @@ var Share = Resource.Share || {}
 
 
     // Youss charactere
-    var youssTexture = Share.get('resources')['youss'].texture;
-    this.youss = new PIXI.Sprite(youssTexture);
-    // this.youss.scale.set
+    // var youssTexture = Share.get('resources')['youss'].texture;
+    // this.youss = new PIXI.Sprite(youssTexture);
     
-    this.youss.position.x = 10;
-    this.youss.position.y = height;  
+    // this.youss.position.x = 10;
+    // this.youss.position.y = height;  
     
-    this.container.addChild(this.youss);
+    // this.container.addChild(this.youss);
     
-    this.bubbleDial = new PIXI.Graphics();
-    this.bubbleDial.beginFill(0xFFFFFF);
-    this.bubbleDial.lineStyle(3, 0x000000, 1);
+    // this.bubbleDial = new PIXI.Graphics();
+    // this.bubbleDial.beginFill(0xFFFFFF);
+    // this.bubbleDial.lineStyle(3, 0x000000, 1);
     
-    var dialMargin = 20;
-    var dialX = this.youss.width + this.youss.position.x - 10;
-    var dialWidth = width - dialX - dialMargin;
-    var dialHeight = 100;
+    // var dialMargin = 20;
+    // var dialX = this.youss.width + this.youss.position.x - 10;
+    // var dialWidth = width - dialX - dialMargin;
+    // var dialHeight = 100;
     
-    dialWidth = Math.min(dialWidth, 300);
+    // dialWidth = Math.min(dialWidth, 300);
     
-    this.bubbleDial.drawRoundedRect(0, 0, dialWidth, dialHeight, 5);
-    this.bubbleDial.endFill();
+    // this.bubbleDial.drawRoundedRect(0, 0, dialWidth, dialHeight, 5);
+    // this.bubbleDial.endFill();
     
-    this.bubbleDial.position.x = dialX;
-    this.bubbleDial.position.y = height - this.youss.height + 70;
+    // this.bubbleDial.position.x = dialX;
+    // this.bubbleDial.position.y = height - this.youss.height + 70;
     
-    this.bubbleDial.rotation = Util.Math2.degToRad(40);
-    this.bubbleDial.alpha = 0;
+    // this.bubbleDial.rotation = Util.Math2.degToRad(40);
+    // this.bubbleDial.alpha = 0;
     
-    var s = 'Reach the sky';
+    // var s = 'Reach the sky';
 
-    this.dialText = new PIXI.Text(s, {
-      font: "17px Arial",
-      wordWrap: true,
-      wordWrapWidth: dialWidth - 20,
-    });
+    // this.dialText = new PIXI.Text(s, {
+    //   font: "17px Arial",
+    //   wordWrap: true,
+    //   wordWrapWidth: dialWidth - 20,
+    // });
     
-    this.dialText.position.x = 10;
-    this.dialText.position.y = 10;
-    this.bubbleDial.addChild(this.dialText);
+    // this.dialText.position.x = 10;
+    // this.dialText.position.y = 10;
+    // this.bubbleDial.addChild(this.dialText);
     
-    this.container.addChild(this.bubbleDial);
+    // this.container.addChild(this.bubbleDial);
     
     
     this.stage.addChildAt(this.container, 2);
@@ -211,15 +210,13 @@ var Share = Resource.Share || {}
     this.tlTuto.to(bg, 1, {alpha: ALPHA_TUTO}, 'start');
     
     this.tlTuto.staggerTo(toStagger, 0.8, {x: 1, y: 1, ease: Elastic.easeOut}, 0.1, 'start+=0.3');
-    this.tlTuto.to(this.youss.position, 0.2, {y: '-=' + this.youss.height});
-    this.tlTuto.to(this.bubbleDial, 0.1, {alpha: 1}, '-=0.1');
-    this.tlTuto.to(this.bubbleDial.position, 0.2, {y: '-=50'}, '-=0.15');
-    this.tlTuto.to(this.bubbleDial, 1, {rotation: 0, ease: Elastic.easeOut}, '-=0.2');
-    // this.tlTuto.staggerTo(staggerTextDial, 0.3, {rotation: degToRad(0), alpha: 1}, 0.03, '-=0.7');
+    // this.tlTuto.to(this.youss.position, 0.2, {y: '-=' + this.youss.height});
+    // this.tlTuto.to(this.bubbleDial, 0.1, {alpha: 1}, '-=0.1');
+    // this.tlTuto.to(this.bubbleDial.position, 0.2, {y: '-=50'}, '-=0.15');
+    // this.tlTuto.to(this.bubbleDial, 1, {rotation: 0, ease: Elastic.easeOut}, '-=0.2');
     this.tlTuto.staggerTo([
       this.recordContainer.position, 
       this.nbGameContainer.position
-    // ], 1, {x: 0, ease: Bounce.easeOut}, 0.2, 'start+=0.2');
     ], 0.5, {x: -10, ease: Back.easeOut}, 0.2, '-=0.2');
     
     var pencilDestX = bridgeWidth + pencil.width/2 + 13;
@@ -268,7 +265,7 @@ var Share = Resource.Share || {}
       this.recordContainer.position,
       this.nbGameContainer.position
     ], 0.3, {x: -100}, 'start');
-    tl.to([this.youss.position, this.bubbleDial.position], 0.3, {y: '+=' + this.youss.height}, 'start');
+    // tl.to([this.youss.position, this.bubbleDial.position], 0.3, {y: '+=' + this.youss.height}, 'start');
     tl.to(this.container, 0.6, {alpha: 0});
     
     tl.call(function(container){

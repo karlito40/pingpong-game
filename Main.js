@@ -39,6 +39,7 @@ var NB_BOXES = 1
 , SCROLL_SPEED = 5
 , GARBAGE_DELAY = 2000
 , STEP_ALTITUDE = 1000
+, TOP_LIMIT = -500
 , GARBAGE_TYPE = ['trampoline', 'particle']
 , PLATFORM_TUTO = 'tuto'
 // , PLATFORM_SPEED = SCROLL_SPEED/13; // ok
@@ -144,8 +145,8 @@ var NB_BOXES = 1
     // ce qui engendre l'affichage du tuto
     var nbParty = 1;
     ball.onMove = function(pos) {
-      if(pos.y > height && !hasEnd) {
-        
+      // pos.y < TOP_LIMIT to fix a physic bug engine
+      if(pos.y < TOP_LIMIT || pos.y > height && !hasEnd) {
         nbParty++;
         
         hasEnd = true;

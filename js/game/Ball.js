@@ -75,12 +75,14 @@ var Physics = Physics || {}
   Ball.prototype.active = function() {
     this.staticAnim.clear();
     this.body.view.scale.set(1, 1);
-    this.lineLyric = 0;
+    
     this.body.treatment = 'dynamic';
     
     // it shouldn't be there
     var widthScene = Share.get('width');
     var heightScene = Share.get('height');
+    
+    this.lineLyric = 0;
     
     var artist = Lyrics[~~(Math.random()*Lyrics.length)];
     var songs = artist.songs;
@@ -220,6 +222,10 @@ var Physics = Physics || {}
     if(this.onMove) {
       this.onMove(this.body.state.pos);
     }
+  }
+  
+  Ball.prototype.getY = function() {
+    return this.body.state.pos.y;
   }
   
   exports.Ball = Ball;

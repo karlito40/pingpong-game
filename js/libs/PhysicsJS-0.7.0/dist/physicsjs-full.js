@@ -11501,7 +11501,8 @@ Physics.renderer('pixi', function( parent ){
             this.renderer = new PIXI.autoDetectRenderer(this.options.width, this.options.height, {
                 view: el,
                 transparent: isTransparent,
-                antialias: true,
+                antialias: false,
+                 // resolution: window.devicePixelRatio,
                 backgroundColor: this.options.styles.color,
             });
             
@@ -11785,6 +11786,7 @@ Physics.renderer('pixi', function( parent ){
             graphics.lineTo(x, y);
 
             graphics.endFill();
+            
             return graphics;
         },
 

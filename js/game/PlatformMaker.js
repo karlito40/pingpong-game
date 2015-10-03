@@ -151,6 +151,7 @@ var Share = Resource.Share
     
     var lineContainer = new PIXI.Container();
     var tilingSprite = new PIXI.extras.TilingSprite(lineTexture, width, heightTrampoline);
+    
     var leftCircle = new PIXI.Sprite(circleTexture);
     var rightCircle = new PIXI.Sprite(circleTexture);
     

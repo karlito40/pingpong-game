@@ -53,7 +53,7 @@ var Physics = Physics || {}
     this.staticAnim.to(this.body.view.scale, 0.2, {x: 0.8, y: 0.9});
     
     this.body.state.pos.x = this.renderer.width/2;
-    this.body.state.pos.y = 210;
+    this.body.state.pos.y = 230;
     
     if(this.tlSong) {
       this.tlSong.clear();

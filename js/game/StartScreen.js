@@ -40,12 +40,14 @@ var Share = Resource.Share || {}
     this.logoContainer = new PIXI.Container();
     var youssyText = new PIXI.extras.BitmapText("Scribble", {font: "60px OogieBoogie"});
     youssyText.position.x = Share.get('width')/2 - youssyText.width/2;
-    youssyText.position.y = 50;
+    // youssyText.position.y = 50;
+    youssyText.position.y = 75;
     
     // var ballText = new PIXI.extras.BitmapText("Ball", {font: "60px OogieBoogie", tint: 0x1d2b38});
     var ballText = new PIXI.extras.BitmapText("Ball", {font: "60px OogieBoogie"});
     ballText.position.x = Share.get('width')/2 - ballText.width/2;
-    ballText.position.y = 95;
+    // ballText.position.y = 95;
+    ballText.position.y = 115;
     
     this.logoContainer.addChild(youssyText);
     this.logoContainer.addChild(ballText);
@@ -67,12 +69,16 @@ var Share = Resource.Share || {}
     
     var recordBgTexture = Share.get('resources')['bg-record'].texture;
     var recordBg = new PIXI.extras.TilingSprite(recordBgTexture, 80, 23);
+    recordBg.scale.x = 1.15;
+    recordBg.scale.y = 1.15;
     
     this.recordContainer.addChild(recordBg);
     
     var recordText = new PIXI.extras.BitmapText(this.record.toString(), {
-      font: "15px OogieBoogieMin"
+      font: "20px OogieBoogieMin"
     });
+    
+    recordText.position.y = -2;    
     recordText.position.x = this.recordContainer.width - recordText.width - 25;    
     
     this.recordContainer.addChild(recordText);
@@ -80,7 +86,7 @@ var Share = Resource.Share || {}
     var ballTexture = Share.get('resources')['youssy-ball'].texture;
     var recordIco = new PIXI.Sprite(ballTexture);
     recordIco.scale.set(0.6);
-    recordIco.position.y = -5;
+    recordIco.position.y = -2;
     recordIco.position.x = this.recordContainer.width - 20;
     
     this.recordContainer.addChild(recordIco);
@@ -94,12 +100,14 @@ var Share = Resource.Share || {}
     
     var nbGameTexture = Share.get('resources')['bg-party'].texture;
     var nbGameBg = new PIXI.extras.TilingSprite(nbGameTexture, 60, 23);
-    
+    nbGameBg.scale.x = 1.15;
+    nbGameBg.scale.y = 1.15;
     this.nbGameContainer.addChild(nbGameBg);
     
     var nbGameText = new PIXI.extras.BitmapText(this.nbGame.toString(), {
-      font: "15px OogieBoogieMin"
+      font: "20px OogieBoogieMin"
     });
+    nbGameText.position.y = -1;    
     nbGameText.position.x = this.nbGameContainer.width - nbGameText.width - 25;    
     
     this.nbGameContainer.addChild(nbGameText);
@@ -107,7 +115,7 @@ var Share = Resource.Share || {}
     var ballTexture = Share.get('resources')['youssy-ball'].texture;
     var nbGameIco = new PIXI.Sprite(ballTexture);
     nbGameIco.scale.set(0.6);
-    nbGameIco.position.y = -5;
+    nbGameIco.position.y = -2;
     nbGameIco.position.x = this.nbGameContainer.width - 20;
     
     this.nbGameContainer.addChild(nbGameIco);
@@ -136,7 +144,7 @@ var Share = Resource.Share || {}
     bridgeContainer.addChild(rightCircle);
     
     bridgeContainer.position.x = width/2 - bridgeContainer.width/2 - bridgeWidth/2;
-    bridgeContainer.position.y = 270;
+    bridgeContainer.position.y = 290;
     
     this.container.addChild(bridgeContainer);
 
@@ -151,50 +159,6 @@ var Share = Resource.Share || {}
     
     this.container.addChild(pencil);
 
-
-    // Youss charactere
-    // var youssTexture = Share.get('resources')['youss'].texture;
-    // this.youss = new PIXI.Sprite(youssTexture);
-    
-    // this.youss.position.x = 10;
-    // this.youss.position.y = height;  
-    
-    // this.container.addChild(this.youss);
-    
-    // this.bubbleDial = new PIXI.Graphics();
-    // this.bubbleDial.beginFill(0xFFFFFF);
-    // this.bubbleDial.lineStyle(3, 0x000000, 1);
-    
-    // var dialMargin = 20;
-    // var dialX = this.youss.width + this.youss.position.x - 10;
-    // var dialWidth = width - dialX - dialMargin;
-    // var dialHeight = 100;
-    
-    // dialWidth = Math.min(dialWidth, 300);
-    
-    // this.bubbleDial.drawRoundedRect(0, 0, dialWidth, dialHeight, 5);
-    // this.bubbleDial.endFill();
-    
-    // this.bubbleDial.position.x = dialX;
-    // this.bubbleDial.position.y = height - this.youss.height + 70;
-    
-    // this.bubbleDial.rotation = Util.Math2.degToRad(40);
-    // this.bubbleDial.alpha = 0;
-    
-    // var s = 'Reach the sky';
-
-    // this.dialText = new PIXI.Text(s, {
-    //   font: "17px Arial",
-    //   wordWrap: true,
-    //   wordWrapWidth: dialWidth - 20,
-    // });
-    
-    // this.dialText.position.x = 10;
-    // this.dialText.position.y = 10;
-    // this.bubbleDial.addChild(this.dialText);
-    
-    // this.container.addChild(this.bubbleDial);
-    
     
     this.stage.addChildAt(this.container, 2);
     
@@ -203,8 +167,8 @@ var Share = Resource.Share || {}
      */
     
     
-    this.nbGameContainer.position.x = -100;
-    this.recordContainer.position.x = -100;
+    this.nbGameContainer.position.x = -110;
+    this.recordContainer.position.x = -110;
     
     this.tlTuto = new TimelineMax();
     this.tlTuto.to(bg, 1, {alpha: ALPHA_TUTO}, 'start');
@@ -217,7 +181,7 @@ var Share = Resource.Share || {}
     this.tlTuto.staggerTo([
       this.recordContainer.position, 
       this.nbGameContainer.position
-    ], 0.5, {x: -10, ease: Back.easeOut}, 0.2, '-=0.2');
+    ], 0.5, {x: -10, ease: Back.easeOut}, 0.2, 'start');
     
     var pencilDestX = bridgeWidth + pencil.width/2 + 13;
     

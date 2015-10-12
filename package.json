@@ -7,7 +7,9 @@
     "test": "test"
   },
   "dependencies": {
-    "express": "^4.13.3"
+    "express": "^4.13.3",
+    "gulp": "^3.9.0",
+    "gulp-tsc": "^1.1.1"
   },
   "devDependencies": {},
   "scripts": {

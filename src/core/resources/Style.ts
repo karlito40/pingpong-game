@@ -18,7 +18,8 @@ module Resource {
         fill: 0xFFFFFF
       },
     
-      background: 0xfae337
+      // background: 0xfae337
+      background: 0x000000
     };
     
     static get(key: string): any {

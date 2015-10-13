@@ -23,7 +23,8 @@ interface PhysicsWorld {
   timestep(dt?: number): any;   
   unpause(): PhysicsWorld;   
   wakeUpAll(): PhysicsWorld;   
-  warp(warp?: number): any;   
+  warp(warp?: number): any;
+  on(key: string, cb: Function);
 }
 
 interface PhysicsBody {

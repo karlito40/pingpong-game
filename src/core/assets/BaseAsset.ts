@@ -1,7 +1,7 @@
-/// <reference path="../loaders/Loadable.ts"/>
+/// <reference path="../loaders/ILoadable.ts"/>
 
 module Asset {
-  export class BaseAsset implements Loadable{
+  export class BaseAsset implements ILoadable{
     alias: string;
     path: string;
     type: number;

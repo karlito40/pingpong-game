@@ -1,7 +1,7 @@
 /// <reference path="../loaders/Loadable.ts"/>
 
 module Asset {
-  export class AssetBase implements Loadable{
+  export class BaseAsset implements Loadable{
     alias: string;
     path: string;
     type: number;
@@ -24,12 +24,12 @@ module Asset {
       return this.type;
     }
     
-    setPath(path: string): AssetBase {
+    setPath(path: string): BaseAsset {
       this.path = path;
       return this;
     }
     
-    setAlias(alias: string): AssetBase {
+    setAlias(alias: string): BaseAsset {
       this.alias = alias;
       return this;
     }

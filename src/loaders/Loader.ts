@@ -1,4 +1,5 @@
 /// <reference path="./LoaderController.ts"/>
+/// <reference path="./Loadable.ts"/>
 
 class Loader {
   assets: Array<Loadable>;

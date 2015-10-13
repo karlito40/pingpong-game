@@ -1,5 +1,5 @@
 module Asset {
-  export enum Type {
+  export const enum Type {
     IMAGE, 
     SOUND, 
     FONT

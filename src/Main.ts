@@ -9,7 +9,7 @@
 
 var loader = new Loader(PIXI.loader);
 
-// Things relate to our app
+// Things relate to the app
 loader
   .add(new Asset.Font('OogieBoogie', 'public/fonts/OogieBoogie/OogieBoogie.fnt'))
   .add(new Asset.Font('OogieBoogieMin', 'public/fonts/OogieBoogie/OogieBoogieMin.fnt'))
@@ -30,8 +30,7 @@ loader
     // Things relate to the game
     var game = new PingPong.Game();
     
-  })
-  ;
+  });
 
   
 

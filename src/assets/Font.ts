@@ -1,8 +1,8 @@
-/// <reference path="./AssetBase.ts"/>
+/// <reference path="./BaseAsset.ts"/>
 /// <reference path="./Type.ts"/>
 
 module Asset {
-  export class Font extends AssetBase {
+  export class Font extends BaseAsset {
     
     constructor(alias: string, path: string) {
       super(alias, path, Type.FONT);

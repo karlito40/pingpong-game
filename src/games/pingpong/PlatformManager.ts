@@ -87,7 +87,6 @@ module PingPong {
       this.physic.addBody(finalPlatform.getBody());
       
       if(type == PLATFORM_TYPE.STATIC) {
-        finalPlatform.x = 'toto';
         this.staticPlatforms.push(finalPlatform);
       }
       

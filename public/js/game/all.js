@@ -721,6 +721,7 @@ var Util;
 /// <reference path="../../core/utils/Math2.ts"/>
 /// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
 /// <reference path="../../core/resources/Share.ts"/>
+/// <reference path="../../core/resources/Storage.ts"/>
 /// <reference path="./Constant.ts"/>
 var PingPong;
 (function (PingPong) {

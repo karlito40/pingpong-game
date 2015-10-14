@@ -1,6 +1,6 @@
 ## Technos
 
-* [PhysicsJS](http://wellcaffeinated.net/PhysicsJS/) Just leave the one provide on this project. It has been modified.
+* [PhysicsJS](http://wellcaffeinated.net/PhysicsJS/) Just leave the one provide by this project (there is some modification on it)
 * [PixiJS](https://github.com/pixijs/pixi.js)
 * [GsapJS](http://greensock.com/gsap)
 

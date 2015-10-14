@@ -12,6 +12,7 @@ module PingPong {
     protected idName: string;
     protected active: boolean;
     protected physic: Physic;
+    protected staticAnim: TimelineMax;
     
     onBump: Function;
     onLost: Function;
@@ -47,6 +48,8 @@ module PingPong {
         this.getPhysicsEvents()
       ]);
       
+      this.stop();
+      
     }
     
     update(): void {
@@ -63,17 +66,23 @@ module PingPong {
     
     start(): void {
       this.active = true;
-      this.body.view.scale.set(1, 1);
+      // this.body.view.scale.set(1, 1);
       this.body.treatment = 'dynamic';
     }
     
     stop(): void {
       this.active = false;
-      this.body.view.scale.set(1, 1);
+      // this.body.view.scale.set(1, 1);
       this.body.treatment = 'static';
       
       this.body.state.pos.x = Share.get('width')/2;
       this.body.state.pos.y = 210;
+      
+      if(!this.staticAnim) {
+        this.staticAnim = new TimelineMax({yoyo: true, repeat: -1});
+        this.staticAnim.to(this.body.view.scale, 0.2, {x: 0.8, y: 0.9});  
+      }
+      
     }
     
     onCollision(data): void {

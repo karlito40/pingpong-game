@@ -24,7 +24,7 @@ module Popup {
     constructor() {
       super();
       
-      this.filterAlpha = 0.55;
+      this.filterAlpha = 0.3;
       this.openState = false;
       this.onClose = null;
     }

@@ -2,10 +2,12 @@
 /// <reference path="../../core/utils/Math2.ts"/>
 /// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
 /// <reference path="../../core/resources/Share.ts"/>
+/// <reference path="./Constant.ts"/>
 
 module PingPong {
   
   var Share = Resource.Share;
+  var Storage = Resource.Storage;
   
   export class StarterPopup extends Popup.BasePopup {
     
@@ -31,11 +33,12 @@ module PingPong {
     constructor() {
       super();
       
-      this.record = 0;
-      this.nbGame = 0;
       this.bridgeWidth = 150;
       this.tlTuto = null;
       this.tlPlatform = null;
+      
+      this.nbGame = Storage.get(Constant.NB_GAME) || 0;
+      this.record = Storage.get(Constant.RECORD) || 0;
     }
         
     create(): void {

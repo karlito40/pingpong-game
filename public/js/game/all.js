@@ -1,3 +1,81 @@
+/// <reference path="../loaders/ILoadable.ts"/>
+var Asset;
+(function (Asset) {
+    var BaseAsset = (function () {
+        function BaseAsset(alias, path, type) {
+            this.alias = alias;
+            this.path = path;
+            this.type = type;
+        }
+        BaseAsset.prototype.getAlias = function () {
+            return this.alias;
+        };
+        BaseAsset.prototype.getPath = function () {
+            return this.path;
+        };
+        BaseAsset.prototype.getType = function () {
+            return this.type;
+        };
+        BaseAsset.prototype.setPath = function (path) {
+            this.path = path;
+            return this;
+        };
+        BaseAsset.prototype.setAlias = function (alias) {
+            this.alias = alias;
+            return this;
+        };
+        return BaseAsset;
+    })();
+    Asset.BaseAsset = BaseAsset;
+})(Asset || (Asset = {}));
+var Asset;
+(function (Asset) {
+    ;
+})(Asset || (Asset = {}));
+/// <reference path="./BaseAsset.ts"/>
+/// <reference path="./Type.ts"/>
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var Asset;
+(function (Asset) {
+    var Font = (function (_super) {
+        __extends(Font, _super);
+        function Font(alias, path) {
+            _super.call(this, alias, path, 2 /* FONT */);
+        }
+        return Font;
+    })(Asset.BaseAsset);
+    Asset.Font = Font;
+})(Asset || (Asset = {}));
+/// <reference path="./BaseAsset.ts"/>
+/// <reference path="./Type.ts"/>
+var Asset;
+(function (Asset) {
+    var Image = (function (_super) {
+        __extends(Image, _super);
+        function Image(alias, path) {
+            _super.call(this, alias, path, 0 /* IMAGE */);
+        }
+        return Image;
+    })(Asset.BaseAsset);
+    Asset.Image = Image;
+})(Asset || (Asset = {}));
+/// <reference path="./BaseAsset.ts"/>
+/// <reference path="./Type.ts"/>
+var Asset;
+(function (Asset) {
+    var Sound = (function (_super) {
+        __extends(Sound, _super);
+        function Sound(alias, path) {
+            _super.call(this, alias, path, 1 /* SOUND */);
+        }
+        return Sound;
+    })(Asset.BaseAsset);
+    Asset.Sound = Sound;
+})(Asset || (Asset = {}));
 var Resource;
 (function (Resource) {
     var Share = (function () {
@@ -19,6 +97,351 @@ var Resource;
     })();
     Resource.Share = Share;
 })(Resource || (Resource = {}));
+/// <reference path="./LoaderController.ts"/>
+/// <reference path="./ILoadable.ts"/>
+/// <reference path="../resources/Share.ts"/>
+var Loader = (function () {
+    function Loader(controller) {
+        this.controller = controller;
+        this.assets = new Array();
+    }
+    Loader.prototype.add = function (asset) {
+        this.assets.push(asset);
+        this.controller.add(asset.getAlias(), asset.getPath());
+        return this;
+    };
+    Loader.prototype.load = function (cb) {
+        this.controller.load(function (loader, resources) {
+            var res = Resource.Share.get('resources') || {};
+            for (var key in resources) {
+                res[key] = resources[key];
+            }
+            Resource.Share.set('resources', res);
+            cb();
+        });
+    };
+    return Loader;
+})();
+/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
+/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
+/// <reference path="../../../typings/greensock/greensock.d.ts"/>
+/// <reference path="../resources/Share.ts"/>
+/// <reference path="../popups/IPopup.ts"/>
+var Scene;
+(function (Scene) {
+    var CURRENT_SCENE = 'current_scene';
+    var BaseScene = (function (_super) {
+        __extends(BaseScene, _super);
+        function BaseScene(className) {
+            _super.call(this);
+            this.className = className;
+            this.open = false;
+            // this.visible = false;
+            this.popups = new Array();
+            this.onClose = null;
+            this.Share = Resource.Share;
+            this.stage = this.Share.get('stage');
+        }
+        BaseScene.getCurrent = function () {
+            return Resource.Share.get(CURRENT_SCENE);
+        };
+        /**
+         * Attach the scene to the current stage
+         */
+        BaseScene.prototype.start = function () {
+            if (this.open) {
+                return;
+            }
+            var currentScene = this.Share.get(CURRENT_SCENE);
+            if (currentScene) {
+                currentScene.close();
+            }
+            this.Share.set(CURRENT_SCENE, this);
+            this.open = true;
+            this.create();
+            this.stage.addChild(this);
+            this.animOpen();
+            this.logic();
+        };
+        BaseScene.prototype.animOpen = function () {
+            this.layerMask = new PIXI.Graphics();
+            this.layerMask.beginFill(0x000000)
+                .drawRect(0, 0, this.Share.get('width'), this.Share.get('height'))
+                .endFill();
+            this.addChild(this.layerMask);
+            TweenLite.to(this.layerMask, 0.7, { alpha: 0 });
+        };
+        /**
+         * Close the scene
+         */
+        BaseScene.prototype.close = function () {
+            if (!this.open) {
+                return;
+            }
+            this.removeAllPopup();
+            this.Share.set(CURRENT_SCENE, null);
+            this.open = false;
+            this.clean();
+            if (this.onClose) {
+                this.onClose();
+            }
+        };
+        /**
+         * Restart the scene
+         */
+        BaseScene.prototype.restart = function () {
+            var restartScene = new Scene[this.className]();
+            restartScene.start();
+        };
+        /**
+         * Attach a popup to the scene
+         */
+        BaseScene.prototype.addPopup = function (popup) {
+            this.popups.push(popup);
+            this.stage.addChild(popup);
+        };
+        /**
+         * Destroy every popup from the scene
+         */
+        BaseScene.prototype.removeAllPopup = function () {
+            var _this = this;
+            this.popups.forEach(function (popup) {
+                _this.stage.removeChild(popup);
+            });
+            this.popups.length = 0;
+        };
+        /**
+         * Remove a specific popup
+         */
+        BaseScene.prototype.removePopup = function (popup) {
+            var index = this.popups.indexOf(popup);
+            if (index == -1) {
+                return;
+            }
+            this.popups.splice(index, 1);
+        };
+        BaseScene.prototype.clean = function () {
+            this.stage.removeChild(this);
+        };
+        return BaseScene;
+    })(PIXI.Container);
+    Scene.BaseScene = BaseScene;
+})(Scene || (Scene = {}));
+/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
+/// <reference path="../resources/Share.ts"/>
+/// <reference path="../scenes/BaseScene.ts"/>
+/// <reference path="./IPopup.ts"/>
+/// <reference path="../../../typings/greensock/greensock.d.ts"/>
+var Popup;
+(function (Popup) {
+    var Share = Resource.Share;
+    var BasePopup = (function (_super) {
+        __extends(BasePopup, _super);
+        function BasePopup() {
+            _super.call(this);
+            this.filterAlpha = 0.3;
+            this.openState = false;
+            this.onClose = null;
+        }
+        BasePopup.prototype.open = function () {
+            BasePopup.current = this;
+            this.openState = true;
+            this.alpha = 0;
+            this.addFilter();
+            this.create();
+            Scene.BaseScene
+                .getCurrent()
+                .addPopup(this);
+            TweenLite.to(this, 0.5, { alpha: 1 });
+        };
+        BasePopup.prototype.addFilter = function () {
+            this.filter = new PIXI.Graphics();
+            this.filter.beginFill(0x000000)
+                .drawRect(0, 0, Share.get('width'), Share.get('height'))
+                .endFill();
+            this.filter.alpha = this.filterAlpha;
+            this.addChild(this.filter);
+        };
+        BasePopup.prototype.close = function () {
+            var _this = this;
+            if (!this.openState) {
+                return;
+            }
+            BasePopup.current = null;
+            this.openState = false;
+            if (this.onClose) {
+                this.onClose();
+            }
+            TweenMax.to(this, 0.3, { alpha: 0, onComplete: function () {
+                    Scene.BaseScene
+                        .getCurrent()
+                        .removePopup(_this);
+                } });
+        };
+        BasePopup.current = null;
+        BasePopup.id = 0;
+        return BasePopup;
+    })(PIXI.Container);
+    Popup.BasePopup = BasePopup;
+})(Popup || (Popup = {}));
+var Resource;
+(function (Resource) {
+    var SystemStorage = (function () {
+        function SystemStorage() {
+        }
+        SystemStorage.getItem = function (key) {
+            if (localStorage) {
+                SystemStorage._map[key] = localStorage.getItem(key);
+            }
+            return SystemStorage._map[key];
+        };
+        SystemStorage.setItem = function (key, value) {
+            SystemStorage._map[key] = value;
+            if (localStorage) {
+                localStorage.setItem(key, value);
+            }
+        };
+        SystemStorage._map = {};
+        return SystemStorage;
+    })();
+    var Storage = (function () {
+        function Storage() {
+        }
+        Storage.get = function (key) {
+            var val = SystemStorage.getItem(key);
+            var o = JSON.parse(val);
+            if (o && o._lonely) {
+                return o._lonely;
+            }
+            return o;
+        };
+        Storage.set = function (key, value) {
+            if (typeof value != 'object') {
+                value = { _lonely: value };
+            }
+            value = JSON.stringify(value);
+            return SystemStorage.setItem(key, value);
+        };
+        return Storage;
+    })();
+    Resource.Storage = Storage;
+})(Resource || (Resource = {}));
+var Resource;
+(function (Resource) {
+    var Style = (function () {
+        function Style() {
+        }
+        Style.get = function (key) {
+            return Style.config[key];
+        };
+        Style.config = {
+            circle: {
+                strokeStyle: 0xcb4b16,
+                lineWidth: 1,
+                fillStyle: 'transparent'
+            },
+            line: {
+                strokeStyle: 0x3e5060,
+                lineWidth: 4
+            },
+            font: {
+                font: '30px OogieBoogie',
+                fill: 0xFFFFFF
+            },
+            // background: 0xfae337
+            background: 0x000000
+        };
+        return Style;
+    })();
+    Resource.Style = Style;
+})(Resource || (Resource = {}));
+/// <reference path="./BaseScene.ts"/>
+var Scene;
+(function (Scene) {
+    var SplashScene = (function (_super) {
+        __extends(SplashScene, _super);
+        function SplashScene(color) {
+            _super.call(this, 'SplashScene');
+            this.color = color || 0x048cff;
+        }
+        SplashScene.prototype.create = function () {
+            var graph = new PIXI.Graphics();
+            graph.beginFill(this.color);
+            graph.drawRect(0, 0, this.Share.get('width'), this.Share.get('height'));
+            graph.endFill();
+            this.addChild(graph);
+            var logoTexture = this.Share.get('resources')['fantouch'].texture;
+            var logo = new PIXI.Sprite(logoTexture);
+            logo.scale.set(0.8, 0.8);
+            logo.anchor.set(0.5, 0.5);
+            logo.position.set(this.Share.get('width') / 2, this.Share.get('height') / 2);
+            this.addChild(logo);
+        };
+        SplashScene.prototype.logic = function () {
+            // setTimeout(() => {
+            //   this.close();  
+            // }, 3000)
+        };
+        SplashScene.prototype.start = function () {
+            this.startAt = Date.now();
+            _super.prototype.start.call(this);
+        };
+        SplashScene.prototype.close = function () {
+            var dt = Date.now() - this.startAt;
+            if (dt > SplashScene.MIN_DISPLAY) {
+                _super.prototype.close.call(this);
+            }
+            else {
+                setTimeout(this.close.bind(this), dt);
+            }
+        };
+        SplashScene.MIN_DISPLAY = 1000;
+        return SplashScene;
+    })(Scene.BaseScene);
+    Scene.SplashScene = SplashScene;
+})(Scene || (Scene = {}));
+var Util;
+(function (Util) {
+    var Color = (function () {
+        function Color() {
+        }
+        Color.componentToHex = function (c) {
+            var hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        };
+        Color.rgbToHax = function (rgb) {
+            var rgbList = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            return "0x" +
+                Color.componentToHex(parseInt(rgbList[1]))
+                + Color.componentToHex(parseInt(rgbList[2]))
+                + Color.componentToHex(parseInt(rgbList[3]));
+        };
+        Color.hexaToColor = function (hexa) {
+            return '#' + hexa.toString().slice(2);
+        };
+        Color.colorToHexa = function (color) {
+            return '0x' + color.toString().slice(1);
+        };
+        return Color;
+    })();
+    Util.Color = Color;
+})(Util || (Util = {}));
+var Util;
+(function (Util) {
+    var Math2 = (function () {
+        function Math2() {
+        }
+        /**
+         * Convert a degree to a radian
+         */
+        Math2.degToRad = function (deg) {
+            return deg * Math2.DEG_TO_RAD;
+        };
+        Math2.DEG_TO_RAD = 0.017453292519943295;
+        return Math2;
+    })();
+    Util.Math2 = Math2;
+})(Util || (Util = {}));
 var PingPong;
 (function (PingPong) {
     var Config = (function () {
@@ -47,11 +470,6 @@ var PingPong;
 /// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
 /// <reference path="../../core/resources/Share.ts"/>
 /// <reference path="./Config.ts"/>
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 var PingPong;
 (function (PingPong) {
     var ALTITUDE_PADDING = 10;
@@ -109,35 +527,6 @@ var PingPong;
     })(PIXI.Container);
     PingPong.Viewport = Viewport;
 })(PingPong || (PingPong = {}));
-var Resource;
-(function (Resource) {
-    var Style = (function () {
-        function Style() {
-        }
-        Style.get = function (key) {
-            return Style.config[key];
-        };
-        Style.config = {
-            circle: {
-                strokeStyle: 0xcb4b16,
-                lineWidth: 1,
-                fillStyle: 'transparent'
-            },
-            line: {
-                strokeStyle: 0x3e5060,
-                lineWidth: 4
-            },
-            font: {
-                font: '30px OogieBoogie',
-                fill: 0xFFFFFF
-            },
-            // background: 0xfae337
-            background: 0x000000
-        };
-        return Style;
-    })();
-    Resource.Style = Style;
-})(Resource || (Resource = {}));
 /// <reference path="../../../typings/physicsjs/physicsjs.d.ts"/>
 /// <reference path="../../core/resources/Share.ts"/>
 /// <reference path="../../core/resources/Style.ts"/>
@@ -196,7 +585,6 @@ var PingPong;
             var _this = this;
             events.forEach(function (event) {
                 for (var key in event) {
-                    console.log('add event', key);
                     _this.world.on(key, event[key]);
                 }
             });
@@ -272,6 +660,7 @@ var PingPong;
             this.physic.addEvents([
                 this.getPhysicsEvents()
             ]);
+            this.stop();
         }
         Ball.prototype.update = function () {
             if (this.active
@@ -284,15 +673,19 @@ var PingPong;
         };
         Ball.prototype.start = function () {
             this.active = true;
-            this.body.view.scale.set(1, 1);
+            // this.body.view.scale.set(1, 1);
             this.body.treatment = 'dynamic';
         };
         Ball.prototype.stop = function () {
             this.active = false;
-            this.body.view.scale.set(1, 1);
+            // this.body.view.scale.set(1, 1);
             this.body.treatment = 'static';
             this.body.state.pos.x = Share.get('width') / 2;
             this.body.state.pos.y = 210;
+            if (!this.staticAnim) {
+                this.staticAnim = new TimelineMax({ yoyo: true, repeat: -1 });
+                this.staticAnim.to(this.body.view.scale, 0.2, { x: 0.8, y: 0.9 });
+            }
         };
         Ball.prototype.onCollision = function (data) {
             var self = this;
@@ -415,200 +808,35 @@ var PingPong;
     })();
     PingPong.Lyric = Lyric;
 })(PingPong || (PingPong = {}));
-/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
-/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
-/// <reference path="../../../typings/greensock/greensock.d.ts"/>
-/// <reference path="../resources/Share.ts"/>
-/// <reference path="../popups/IPopup.ts"/>
-var Scene;
-(function (Scene) {
-    var CURRENT_SCENE = 'current_scene';
-    var BaseScene = (function (_super) {
-        __extends(BaseScene, _super);
-        function BaseScene(className) {
-            _super.call(this);
-            this.className = className;
-            this.open = false;
-            // this.visible = false;
-            this.popups = new Array();
-            this.onClose = null;
-            this.Share = Resource.Share;
-            this.stage = this.Share.get('stage');
+var PingPong;
+(function (PingPong) {
+    var Constant = (function () {
+        function Constant() {
         }
-        BaseScene.getCurrent = function () {
-            return Resource.Share.get(CURRENT_SCENE);
-        };
-        /**
-         * Attach the scene to the current stage
-         */
-        BaseScene.prototype.start = function () {
-            if (this.open) {
-                return;
-            }
-            var currentScene = this.Share.get(CURRENT_SCENE);
-            if (currentScene) {
-                currentScene.close();
-            }
-            this.Share.set(CURRENT_SCENE, this);
-            this.open = true;
-            this.create();
-            this.stage.addChild(this);
-            this.animOpen();
-            this.logic();
-        };
-        BaseScene.prototype.animOpen = function () {
-            this.layerMask = new PIXI.Graphics();
-            this.layerMask.beginFill(0x000000)
-                .drawRect(0, 0, this.Share.get('width'), this.Share.get('height'))
-                .endFill();
-            this.addChild(this.layerMask);
-            TweenLite.to(this.layerMask, 0.7, { alpha: 0 });
-        };
-        /**
-         * Close the scene
-         */
-        BaseScene.prototype.close = function () {
-            if (!this.open) {
-                return;
-            }
-            this.removeAllPopup();
-            this.Share.set(CURRENT_SCENE, null);
-            this.open = false;
-            this.clean();
-            if (this.onClose) {
-                this.onClose();
-            }
-        };
-        /**
-         * Restart the scene
-         */
-        BaseScene.prototype.restart = function () {
-            var restartScene = new Scene[this.className]();
-            restartScene.start();
-        };
-        /**
-         * Attach a popup to the scene
-         */
-        BaseScene.prototype.addPopup = function (popup) {
-            this.popups.push(popup);
-            this.stage.addChild(popup);
-        };
-        /**
-         * Destroy every popup from the scene
-         */
-        BaseScene.prototype.removeAllPopup = function () {
-            var _this = this;
-            this.popups.forEach(function (popup) {
-                _this.stage.removeChild(popup);
-            });
-            this.popups.length = 0;
-        };
-        /**
-         * Remove a specific popup
-         */
-        BaseScene.prototype.removePopup = function (popup) {
-            var index = this.popups.indexOf(popup);
-            if (index == -1) {
-                return;
-            }
-            this.popups.splice(index, 1);
-        };
-        BaseScene.prototype.clean = function () {
-            this.stage.removeChild(this);
-        };
-        return BaseScene;
-    })(PIXI.Container);
-    Scene.BaseScene = BaseScene;
-})(Scene || (Scene = {}));
-/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
-/// <reference path="../resources/Share.ts"/>
-/// <reference path="../scenes/BaseScene.ts"/>
-/// <reference path="./IPopup.ts"/>
-/// <reference path="../../../typings/greensock/greensock.d.ts"/>
-var Popup;
-(function (Popup) {
-    var Share = Resource.Share;
-    var BasePopup = (function (_super) {
-        __extends(BasePopup, _super);
-        function BasePopup() {
-            _super.call(this);
-            this.filterAlpha = 0.55;
-            this.openState = false;
-            this.onClose = null;
-        }
-        BasePopup.prototype.open = function () {
-            BasePopup.current = this;
-            this.openState = true;
-            this.alpha = 0;
-            this.addFilter();
-            this.create();
-            Scene.BaseScene
-                .getCurrent()
-                .addPopup(this);
-            TweenLite.to(this, 0.5, { alpha: 1 });
-        };
-        BasePopup.prototype.addFilter = function () {
-            this.filter = new PIXI.Graphics();
-            this.filter.beginFill(0x000000)
-                .drawRect(0, 0, Share.get('width'), Share.get('height'))
-                .endFill();
-            this.filter.alpha = this.filterAlpha;
-            this.addChild(this.filter);
-        };
-        BasePopup.prototype.close = function () {
-            var _this = this;
-            if (!this.openState) {
-                return;
-            }
-            BasePopup.current = null;
-            this.openState = false;
-            if (this.onClose) {
-                this.onClose();
-            }
-            TweenMax.to(this, 0.3, { alpha: 0, onComplete: function () {
-                    Scene.BaseScene
-                        .getCurrent()
-                        .removePopup(_this);
-                } });
-        };
-        BasePopup.current = null;
-        BasePopup.id = 0;
-        return BasePopup;
-    })(PIXI.Container);
-    Popup.BasePopup = BasePopup;
-})(Popup || (Popup = {}));
-var Util;
-(function (Util) {
-    var Math2 = (function () {
-        function Math2() {
-        }
-        /**
-         * Convert a degree to a radian
-         */
-        Math2.degToRad = function (deg) {
-            return deg * Math2.DEG_TO_RAD;
-        };
-        Math2.DEG_TO_RAD = 0.017453292519943295;
-        return Math2;
+        Constant.NB_GAME = 'nb_game';
+        Constant.RECORD = 'record';
+        return Constant;
     })();
-    Util.Math2 = Math2;
-})(Util || (Util = {}));
+    PingPong.Constant = Constant;
+})(PingPong || (PingPong = {}));
 /// <reference path="../../core/popups/BasePopup.ts"/>
 /// <reference path="../../core/utils/Math2.ts"/>
 /// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
 /// <reference path="../../core/resources/Share.ts"/>
+/// <reference path="./Constant.ts"/>
 var PingPong;
 (function (PingPong) {
     var Share = Resource.Share;
+    var Storage = Resource.Storage;
     var StarterPopup = (function (_super) {
         __extends(StarterPopup, _super);
         function StarterPopup() {
             _super.call(this);
-            this.record = 0;
-            this.nbGame = 0;
             this.bridgeWidth = 150;
             this.tlTuto = null;
             this.tlPlatform = null;
+            this.nbGame = Storage.get(PingPong.Constant.NB_GAME) || 0;
+            this.record = Storage.get(PingPong.Constant.RECORD) || 0;
         }
         StarterPopup.prototype.create = function () {
             this.logoContainer = this.buildLogo();
@@ -878,6 +1106,7 @@ var PingPong;
             this.onBuild = null;
             this.buildingPlatform = null;
             this.staticPlatforms = [];
+            this.lastMove = 0;
             this.nbPlatform = 0;
             this.physic.addEvents([
                 this.getPhysicsEvents()
@@ -898,6 +1127,11 @@ var PingPong;
             if (!this.from || !this.to) {
                 return;
             }
+            var now = Date.now();
+            if (now - this.lastMove < 15) {
+                return;
+            }
+            this.lastMove = now;
             // Well that sucks
             this.cleanBuildingPlatform();
             this.buildingPlatform = new PingPong.Platform(this.from, this.to, 0 /* STATIC */);
@@ -960,17 +1194,22 @@ var PingPong;
 /// <reference path="./Ball.ts"/>
 /// <reference path="./Lyric.ts"/>
 /// <reference path="./StarterPopup.ts"/>
+/// <reference path="./Constant.ts"/>
 /// <reference path="./PlatformManager.ts"/>
 /// <reference path="../../core/scenes/BaseScene.ts"/>
 /// <reference path="../../core/resources/Style.ts"/>
+/// <reference path="../../core/resources/Storage.ts"/>
 var PingPong;
 (function (PingPong) {
+    var Storage = Resource.Storage;
     var GameScene = (function (_super) {
         __extends(GameScene, _super);
         function GameScene(physic) {
             _super.call(this, 'GameScene');
             this.physic = physic;
             this.gameActive = false;
+            this.nbGame = Storage.get(PingPong.Constant.NB_GAME) || 0;
+            this.record = Storage.get(PingPong.Constant.RECORD) || 0;
         }
         GameScene.prototype.create = function () {
             var bg = new PIXI.Graphics();
@@ -1020,6 +1259,12 @@ var PingPong;
             this.platformManager.stop();
             this.ball.stop();
             this.viewport.stop();
+            this.nbGame++;
+            Storage.set(PingPong.Constant.NB_GAME, this.nbGame);
+            if (!this.record || this.record < this.viewport.getScore()) {
+                console.log('set record', this.viewport.getScore());
+                Storage.set(PingPong.Constant.RECORD, this.viewport.getScore());
+            }
             this.starter = new PingPong.StarterPopup();
             this.starter.open();
         };
@@ -1027,76 +1272,6 @@ var PingPong;
     })(Scene.BaseScene);
     PingPong.GameScene = GameScene;
 })(PingPong || (PingPong = {}));
-/// <reference path="./BaseScene.ts"/>
-var Scene;
-(function (Scene) {
-    var SplashScene = (function (_super) {
-        __extends(SplashScene, _super);
-        function SplashScene(color) {
-            _super.call(this, 'SplashScene');
-            this.color = color || 0x048cff;
-        }
-        SplashScene.prototype.create = function () {
-            var graph = new PIXI.Graphics();
-            graph.beginFill(this.color);
-            graph.drawRect(0, 0, this.Share.get('width'), this.Share.get('height'));
-            graph.endFill();
-            this.addChild(graph);
-            var logoTexture = this.Share.get('resources')['fantouch'].texture;
-            var logo = new PIXI.Sprite(logoTexture);
-            logo.scale.set(0.8, 0.8);
-            logo.anchor.set(0.5, 0.5);
-            logo.position.set(this.Share.get('width') / 2, this.Share.get('height') / 2);
-            this.addChild(logo);
-        };
-        SplashScene.prototype.logic = function () {
-            // setTimeout(() => {
-            //   this.close();  
-            // }, 3000)
-        };
-        SplashScene.prototype.start = function () {
-            this.startAt = Date.now();
-            _super.prototype.start.call(this);
-        };
-        SplashScene.prototype.close = function () {
-            var dt = Date.now() - this.startAt;
-            if (dt > SplashScene.MIN_DISPLAY) {
-                _super.prototype.close.call(this);
-            }
-            else {
-                setTimeout(this.close.bind(this), dt);
-            }
-        };
-        SplashScene.MIN_DISPLAY = 1000;
-        return SplashScene;
-    })(Scene.BaseScene);
-    Scene.SplashScene = SplashScene;
-})(Scene || (Scene = {}));
-/// <reference path="./LoaderController.ts"/>
-/// <reference path="./ILoadable.ts"/>
-/// <reference path="../resources/Share.ts"/>
-var Loader = (function () {
-    function Loader(controller) {
-        this.controller = controller;
-        this.assets = new Array();
-    }
-    Loader.prototype.add = function (asset) {
-        this.assets.push(asset);
-        this.controller.add(asset.getAlias(), asset.getPath());
-        return this;
-    };
-    Loader.prototype.load = function (cb) {
-        this.controller.load(function (loader, resources) {
-            var res = Resource.Share.get('resources') || {};
-            for (var key in resources) {
-                res[key] = resources[key];
-            }
-            Resource.Share.set('resources', res);
-            cb();
-        });
-    };
-    return Loader;
-})();
 /// <reference path="./loaders/Loader.ts"/>
 var BaseApp = (function () {
     function BaseApp() {
@@ -1117,79 +1292,6 @@ var BaseApp = (function () {
     };
     return BaseApp;
 })();
-/// <reference path="../loaders/ILoadable.ts"/>
-var Asset;
-(function (Asset) {
-    var BaseAsset = (function () {
-        function BaseAsset(alias, path, type) {
-            this.alias = alias;
-            this.path = path;
-            this.type = type;
-        }
-        BaseAsset.prototype.getAlias = function () {
-            return this.alias;
-        };
-        BaseAsset.prototype.getPath = function () {
-            return this.path;
-        };
-        BaseAsset.prototype.getType = function () {
-            return this.type;
-        };
-        BaseAsset.prototype.setPath = function (path) {
-            this.path = path;
-            return this;
-        };
-        BaseAsset.prototype.setAlias = function (alias) {
-            this.alias = alias;
-            return this;
-        };
-        return BaseAsset;
-    })();
-    Asset.BaseAsset = BaseAsset;
-})(Asset || (Asset = {}));
-var Asset;
-(function (Asset) {
-    ;
-})(Asset || (Asset = {}));
-/// <reference path="./BaseAsset.ts"/>
-/// <reference path="./Type.ts"/>
-var Asset;
-(function (Asset) {
-    var Font = (function (_super) {
-        __extends(Font, _super);
-        function Font(alias, path) {
-            _super.call(this, alias, path, 2 /* FONT */);
-        }
-        return Font;
-    })(Asset.BaseAsset);
-    Asset.Font = Font;
-})(Asset || (Asset = {}));
-/// <reference path="./BaseAsset.ts"/>
-/// <reference path="./Type.ts"/>
-var Asset;
-(function (Asset) {
-    var Image = (function (_super) {
-        __extends(Image, _super);
-        function Image(alias, path) {
-            _super.call(this, alias, path, 0 /* IMAGE */);
-        }
-        return Image;
-    })(Asset.BaseAsset);
-    Asset.Image = Image;
-})(Asset || (Asset = {}));
-/// <reference path="./BaseAsset.ts"/>
-/// <reference path="./Type.ts"/>
-var Asset;
-(function (Asset) {
-    var Sound = (function (_super) {
-        __extends(Sound, _super);
-        function Sound(alias, path) {
-            _super.call(this, alias, path, 1 /* SOUND */);
-        }
-        return Sound;
-    })(Asset.BaseAsset);
-    Asset.Sound = Sound;
-})(Asset || (Asset = {}));
 /// <reference path="./GameScene.ts"/>
 /// <reference path="./Physic.ts"/>
 /// <reference path="../../core/scenes/SplashScene.ts"/>
@@ -1241,32 +1343,6 @@ var PingPong;
     })(BaseApp);
     PingPong.App = App;
 })(PingPong || (PingPong = {}));
-var Util;
-(function (Util) {
-    var Color = (function () {
-        function Color() {
-        }
-        Color.componentToHex = function (c) {
-            var hex = c.toString(16);
-            return hex.length == 1 ? "0" + hex : hex;
-        };
-        Color.rgbToHax = function (rgb) {
-            var rgbList = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-            return "0x" +
-                Color.componentToHex(parseInt(rgbList[1]))
-                + Color.componentToHex(parseInt(rgbList[2]))
-                + Color.componentToHex(parseInt(rgbList[3]));
-        };
-        Color.hexaToColor = function (hexa) {
-            return '#' + hexa.toString().slice(2);
-        };
-        Color.colorToHexa = function (color) {
-            return '0x' + color.toString().slice(1);
-        };
-        return Color;
-    })();
-    Util.Color = Color;
-})(Util || (Util = {}));
 /// <reference path="./core/assets/Font.ts"/>
 /// <reference path="./core/assets/Image.ts"/>
 /// <reference path="./core/assets/Sound.ts"/>

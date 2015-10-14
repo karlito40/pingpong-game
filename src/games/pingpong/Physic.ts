@@ -72,7 +72,6 @@ module PingPong {
     addEvents(events: any) {
       events.forEach((event) => {
         for(var key in event) {
-          console.log('add event', key);
           this.world.on(key, event[key]);
         }
       });

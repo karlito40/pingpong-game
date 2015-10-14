@@ -17,6 +17,8 @@ module PingPong {
     protected staticPlatforms: Array<Platform>;
     protected physic: Physic;
     
+    protected lastMove: number;
+    
     onBuild: Function;
     
     constructor(physic: Physic) {
@@ -28,6 +30,7 @@ module PingPong {
       this.onBuild = null;
       this.buildingPlatform = null;
       this.staticPlatforms = [];
+      this.lastMove = 0;
             
       this.nbPlatform = 0;
       
@@ -55,6 +58,12 @@ module PingPong {
       if(!this.from || !this.to) {
         return;
       }
+      
+      var now = Date.now();
+      if(now - this.lastMove < 15) {
+        return;
+      }
+      this.lastMove = now;
       
       // Well that sucks
       this.cleanBuildingPlatform();

@@ -3,11 +3,16 @@
 /// <reference path="./Ball.ts"/>
 /// <reference path="./Lyric.ts"/>
 /// <reference path="./StarterPopup.ts"/>
+/// <reference path="./Constant.ts"/>
 /// <reference path="./PlatformManager.ts"/>
 /// <reference path="../../core/scenes/BaseScene.ts"/>
 /// <reference path="../../core/resources/Style.ts"/>
+/// <reference path="../../core/resources/Storage.ts"/>
 
 module PingPong {
+  
+  var Storage = Resource.Storage;
+  
   export class GameScene extends Scene.BaseScene {
     
     protected physic: Physic;
@@ -17,11 +22,16 @@ module PingPong {
     protected platformManager: PlatformManager;
     protected gameActive: boolean;
     protected lyric: Lyric;
+    protected nbGame: number;
+    protected record: number;
     
     constructor(physic: Physic) {
       super('GameScene');  
       this.physic = physic;
       this.gameActive = false;
+      
+      this.nbGame = Storage.get(Constant.NB_GAME) || 0;
+      this.record = Storage.get(Constant.RECORD) || 0;
     }
     
     create(): void {
@@ -85,6 +95,13 @@ module PingPong {
       this.platformManager.stop();
       this.ball.stop();
       this.viewport.stop();
+      
+      this.nbGame++;
+      Storage.set(Constant.NB_GAME, this.nbGame);
+      
+      if(!this.record || this.record < this.viewport.getScore()) {
+        Storage.set(Constant.RECORD, this.viewport.getScore());      
+      }
       
       this.starter = new StarterPopup();
       this.starter.open();

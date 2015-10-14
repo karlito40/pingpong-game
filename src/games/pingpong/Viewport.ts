@@ -1,9 +1,13 @@
 /// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
 /// <reference path="../../core/resources/Share.ts"/>
 /// <reference path="./Config.ts"/>
+/// <reference path="./Constant.ts"/>
+/// <reference path="../../core/resources/Storage.ts"/>
 
 module PingPong {
   
+  var Storage = Resource.Storage;
+  var Share = Resource.Share;
   var ALTITUDE_PADDING = 10;
   
   export class Viewport extends PIXI.Container {
@@ -15,6 +19,11 @@ module PingPong {
     protected widthScene: number;
     protected heightScene: number;
     protected active: boolean;
+    protected record: number; 
+    protected recordSepContainer: PIXI.Container; 
+    protected sepContainer: PIXI.Container; 
+    protected hasRecordDisplay: boolean; 
+    protected steps: {}; 
     
     constructor() {
       super();
@@ -30,13 +39,29 @@ module PingPong {
     
     start(): void {
       this.active = true;
+      this.hasRecordDisplay = false;
+      this.steps = {};
       this.altitude = 0;
       this.score = 0;
+      this.record = Storage.get(Constant.RECORD) || 0;
     }
     
     stop(): void {
       this.active = false;
       this.score = this.altitude;
+      
+      if(this.sepContainer) {
+        var stage = Share.get('stage');
+        stage.removeChild(this.sepContainer);
+        this.sepContainer = null;
+      }
+      
+      if(this.recordSepContainer) {
+        var stage = Share.get('stage');
+        stage.removeChild(this.recordSepContainer);
+        this.recordSepContainer = null;
+      }
+    
     }    
     
     private create(): void {
@@ -58,8 +83,83 @@ module PingPong {
       
       if(this.active) {
         this.altitude += Config.SCROLL_SPEED;
-        this.replaceAltitudeText();  
+        this.replaceAltitudeText();
+        
+        if(this.sepContainer) {
+          this.sepContainer.position.y += Config.SCROLL_SPEED;
+        }
+        
+        if(this.recordSepContainer) {
+          this.recordSepContainer.position.y += Config.SCROLL_SPEED;
+        }
+        
+        var currentStep = Math.floor(this.altitude/Config.STEP_ALTITUDE);
+      
+        if(this.record
+          && this.altitude >= this.record 
+          && !this.hasRecordDisplay
+          && Math.floor(this.altitude/Config.STEP_ALTITUDE) == currentStep
+        ) {
+          
+          this.recordSepContainer = new PIXI.Container();
+          
+          var sepTexture = Share.get('resources').sep.texture;
+          var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
+          sep.tint = 0x000000;
+          var stepText = new PIXI.extras.BitmapText('RECORD', {
+            font: "30px OogieBoogie",
+            // tint: 0xee1198
+            tint: 0x000000
+          });
+          stepText.position.set(10, 10);
+          
+          this.recordSepContainer.addChild(sep);
+          this.recordSepContainer.addChild(stepText);
+          
+          Share.get('stage').addChildAt(this.recordSepContainer, 1);
+          
+          this.hasRecordDisplay = true;
+          
+          
+        }
+        
+        // Well it's bad sorry
+        if(!this.steps[currentStep]) {
+          
+          this.steps[currentStep] = true;
+          
+          if(currentStep > 0) {
+            var stage = Share.get('stage');
+            var sepTexture = Share.get('resources').sep.texture;
+            
+            if(this.sepContainer) {
+              stage.removeChild(this.sepContainer);
+            }
+            
+            this.sepContainer = new PIXI.Container();
+            this.sepContainer.alpha = 0.1;
+            
+            var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
+            sep.tint = 0x000000;
+          
+            var stepInd = currentStep * Config.STEP_ALTITUDE;
+            var stepText = new PIXI.extras.BitmapText(stepInd + ' m', {
+              font: "30px OogieBoogie",
+              tint: 0x000000
+            });
+            stepText.position.set(10, 10);
+            
+            this.sepContainer.addChild(sep);
+            this.sepContainer.addChild(stepText);
+            
+            stage.addChildAt(this.sepContainer, 1);  
+          }
+        
+        }
+        
       }
+      
+      
       
     }
     

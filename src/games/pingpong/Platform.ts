@@ -14,7 +14,6 @@ module PingPong {
     
     protected body;
     protected type: PLATFORM_TYPE;
-    x;
     
     constructor(from: IPoint, to: IPoint, type: PLATFORM_TYPE) {
       

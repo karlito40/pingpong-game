@@ -1,21 +1,17 @@
-![YoussyBall](https://d13yacurqjgara.cloudfront.net/users/729829/screenshots/2249241/ping-pong.gif)
-
-**Youssy Ball** is a mobile game base on the awesome [galshir](https://dribbble.com/galshir) ideas. Yet this is a prototype for my current employer. The code was not mean to be seen as it was built really late on a train. But eh, who care ! I had fun making and playing it.
-
 ## Technos
 
-* [PhysicsJS](http://wellcaffeinated.net/PhysicsJS/) Just leave the one provide on this project. It has been modified to make it works the way i want. Well my version also add some feature to the pixi rendering and fixe some of his bug.
-
+* [PhysicsJS](http://wellcaffeinated.net/PhysicsJS/) Just leave the one provide on this project. It has been modified.
 * [PixiJS](https://github.com/pixijs/pixi.js)
 * [GsapJS](http://greensock.com/gsap)
 
+## YoussyBall
+... In the old folder you will find the prototype with more options and maybe less lag.
+
 ## Todo
 
-1. Rewrite everything properly (maybe typescript ?).
-2. Codepen.
-2. Pull request PhysicsJS.
-2. Replace Gsap for Velocity (gsap needs a licence).
+1. Add end game
+2. Use css font instead of bitmap (FXAA not working on mobile)
+3. Add a progressive progression
 
 ## Scores
 
-Me - 13 255m ;)

@@ -1350,7 +1350,6 @@ var PingPong;
         }
         App.prototype.start = function () {
             var _this = this;
-            console.log('app start todo');
             var gameScene = new PingPong.GameScene(this.physic);
             var splashScene = new Scene.SplashScene();
             splashScene.onClose = function () {
@@ -1362,17 +1361,17 @@ var PingPong;
                 splashScene.start();
                 // Load the game asset
                 _this.loaderGame
-                    .add(new Asset.Font('OogieBoogie', 'public/fonts/OogieBoogie/OogieBoogie.fnt'))
-                    .add(new Asset.Font('OogieBoogieMin', 'public/fonts/OogieBoogie/OogieBoogieMin.fnt'))
-                    .add(new Asset.Image('youssy-ball', 'public/images/youssy-ball.png'))
-                    .add(new Asset.Image('bg-cloud', 'public/images/bg-cloud.png'))
-                    .add(new Asset.Image('bg-record', 'public/images/bg-record.png'))
-                    .add(new Asset.Image('bg-party', 'public/images/bg-party.png'))
-                    .add(new Asset.Image('pencil', 'public/images/pencil.png'))
-                    .add(new Asset.Image('line', 'public/images/line.png'))
-                    .add(new Asset.Image('circle', 'public/images/circle.png'))
-                    .add(new Asset.Image('youss', 'public/images/youss.png'))
-                    .add(new Asset.Image('sep', 'public/images/sep.png'));
+                    .add(new Asset.Font('OogieBoogie', 'fonts/OogieBoogie/OogieBoogie.fnt'))
+                    .add(new Asset.Font('OogieBoogieMin', 'fonts/OogieBoogie/OogieBoogieMin.fnt'))
+                    .add(new Asset.Image('youssy-ball', 'images/youssy-ball.png'))
+                    .add(new Asset.Image('bg-cloud', 'images/bg-cloud.png'))
+                    .add(new Asset.Image('bg-record', 'images/bg-record.png'))
+                    .add(new Asset.Image('bg-party', 'images/bg-party.png'))
+                    .add(new Asset.Image('pencil', 'images/pencil.png'))
+                    .add(new Asset.Image('line', 'images/line.png'))
+                    .add(new Asset.Image('circle', 'images/circle.png'))
+                    .add(new Asset.Image('youss', 'images/youss.png'))
+                    .add(new Asset.Image('sep', 'images/sep.png'));
                 _this.loaderGame.load(function () {
                     console.log('loader game complete');
                     splashScene.close();
@@ -1415,5 +1414,5 @@ var Util;
 /// <reference path="./games/pingpong/App.ts"/>
 var app = new PingPong.App();
 app.getLoaderEntry()
-    .add(new Asset.Image('fantouch', 'public/images/fantouch.png'));
+    .add(new Asset.Image('fantouch', 'images/fantouch.png'));
 app.start();

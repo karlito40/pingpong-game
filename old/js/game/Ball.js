@@ -157,7 +157,6 @@ var Physics = Physics || {}
     }
     
     if(isBumpAllowed) {
-      
       var vxBall = this.body.state.vel.x;
       this.body.state.vel.set(vxBall, JUMP_BY); // Force vy to be exactly the same no matter what  
       this.nextLyric();

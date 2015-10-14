@@ -1,6 +1,7 @@
 /// <reference path="./Viewport.ts"/>
 /// <reference path="./Physic.ts"/>
 /// <reference path="./Ball.ts"/>
+/// <reference path="./Lyric.ts"/>
 /// <reference path="./StarterPopup.ts"/>
 /// <reference path="./PlatformManager.ts"/>
 /// <reference path="../../core/scenes/BaseScene.ts"/>
@@ -15,6 +16,7 @@ module PingPong {
     protected ball: Ball;
     protected platformManager: PlatformManager;
     protected gameActive: boolean;
+    protected lyric: Lyric;
     
     constructor(physic: Physic) {
       super('GameScene');  
@@ -41,6 +43,10 @@ module PingPong {
       // Conclusion: the background will hide the background.       
       this.ball = new Ball(this.physic);
       this.ball.onLost = this.endGame.bind(this);
+      this.ball.onBump = (pos) => {
+        this.lyric.next(pos);
+      };
+      
       this.physic.addBody(this.ball.getBody());
       
       this.platformManager = new PlatformManager(this.physic);
@@ -61,6 +67,7 @@ module PingPong {
       }
       this.gameActive = true;
       
+      this.lyric = new Lyric();
       this.platformManager.start();
       this.ball.start();
       this.viewport.start();

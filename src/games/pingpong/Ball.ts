@@ -13,6 +13,7 @@ module PingPong {
     protected active: boolean;
     protected physic: Physic;
     
+    onBump: Function;
     onLost: Function;
     
     constructor(physic: Physic) {
@@ -64,7 +65,6 @@ module PingPong {
       this.active = true;
       this.body.view.scale.set(1, 1);
       this.body.treatment = 'dynamic';
-      
     }
     
     stop(): void {
@@ -110,6 +110,10 @@ module PingPong {
         var vxBall = this.body.state.vel.x;
         this.body.state.vel.set(vxBall, Config.JUMP_BY);   
         // this.nextLyric();
+        
+        if(this.onBump) {
+          this.onBump(this.body.state.pos);
+        }
       }
       
       if(platformCollider) {

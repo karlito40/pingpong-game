@@ -318,6 +318,10 @@ var PingPong;
                 // Force vy to be exactly the same no matter what
                 var vxBall = this.body.state.vel.x;
                 this.body.state.vel.set(vxBall, PingPong.Config.JUMP_BY);
+                // this.nextLyric();
+                if (this.onBump) {
+                    this.onBump(this.body.state.pos);
+                }
             }
             if (platformCollider) {
                 platformCollider.platform.fall();
@@ -334,6 +338,82 @@ var PingPong;
         return Ball;
     })();
     PingPong.Ball = Ball;
+})(PingPong || (PingPong = {}));
+/// <reference path="../../core/resources/Share.ts"/>
+var PingPong;
+(function (PingPong) {
+    var Share = Resource.Share;
+    var Lyric = (function () {
+        function Lyric() {
+            var artistMap = Lyric.config[~~(Math.random() * Lyric.config.length)];
+            var songs = artistMap.songs;
+            this.song = songs[~~(Math.random() * songs.length)];
+            this.line = 0;
+        }
+        Lyric.prototype.next = function (position) {
+            var now = Date.now();
+            if (this.lastCollisionTime
+                && now - this.lastCollisionTime < 25) {
+                return;
+            }
+            this.lastCollisionTime = now;
+            if (!this.line || !this.song.lines[this.line]) {
+                this.line = 0;
+            }
+            var widthScene = Share.get('width');
+            var onomatope = this.song.lines[this.line];
+            var text = new PIXI.extras.BitmapText(onomatope, {
+                font: "30px OogieBoogie"
+            });
+            text.position.y = position.y - 30;
+            text.position.x = position.x + 30;
+            var xEnd = text.position.x + text.width;
+            if (xEnd > widthScene) {
+                var diff = xEnd - widthScene;
+                text.position.x -= diff + 40;
+                if (text.position.x < 0) {
+                    text.position.x = 20;
+                    text.scale.set(0.8, 0.8);
+                }
+                text.position.y += 40;
+            }
+            var stage = Share.get('stage');
+            stage.addChild(text);
+            TweenMax.to(text.position, 0.5, { y: '-=50', onComplete: function () {
+                    stage.removeChild(text);
+                } });
+            this.line++;
+        };
+        Lyric.config = [{
+                artist: 'youss',
+                songs: [{
+                        title: 'LE SCORE',
+                        lines: [
+                            "ne pas ceder",
+                            "ne pas ceder",
+                            "ne pas ceder",
+                            "ne pas ceder",
+                            "ne pas ceder",
+                            "ne pas ceder",
+                            "on s'en sort",
+                            "fais peter LE SCORE",
+                            "j'suis en plein essor",
+                            "on s'en sort",
+                            "fais peter LE SCORE",
+                            "on s'en sort",
+                            "fais peter LE SCORE",
+                            "fais peter LE SCORE",
+                            "on s'en sort",
+                            "j'fais peter LE SCORE",
+                            "peter LE SCORE",
+                            "on s'en sort",
+                            "j'suis en plein essor",
+                        ]
+                    }]
+            }];
+        return Lyric;
+    })();
+    PingPong.Lyric = Lyric;
 })(PingPong || (PingPong = {}));
 /// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
 /// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
@@ -820,8 +900,8 @@ var PingPong;
             }
             // Well that sucks
             this.cleanBuildingPlatform();
-            // this.buildingPlatform = new Platform(this.from, this.to, PLATFORM_TYPE.STATIC);
-            // this.physic.addBody(this.buildingPlatform.getBody());
+            this.buildingPlatform = new PingPong.Platform(this.from, this.to, 0 /* STATIC */);
+            this.physic.addBody(this.buildingPlatform.getBody());
         };
         PlatformManager.prototype.onRelease = function () {
             if (!this.from || !this.to) {
@@ -878,6 +958,7 @@ var PingPong;
 /// <reference path="./Viewport.ts"/>
 /// <reference path="./Physic.ts"/>
 /// <reference path="./Ball.ts"/>
+/// <reference path="./Lyric.ts"/>
 /// <reference path="./StarterPopup.ts"/>
 /// <reference path="./PlatformManager.ts"/>
 /// <reference path="../../core/scenes/BaseScene.ts"/>
@@ -907,6 +988,9 @@ var PingPong;
             // Conclusion: the background will hide the background.       
             this.ball = new PingPong.Ball(this.physic);
             this.ball.onLost = this.endGame.bind(this);
+            this.ball.onBump = function (pos) {
+                _this.lyric.next(pos);
+            };
             this.physic.addBody(this.ball.getBody());
             this.platformManager = new PingPong.PlatformManager(this.physic);
             this.platformManager.onBuild = this.startGame.bind(this);
@@ -922,6 +1006,7 @@ var PingPong;
                 return;
             }
             this.gameActive = true;
+            this.lyric = new PingPong.Lyric();
             this.platformManager.start();
             this.ball.start();
             this.viewport.start();
@@ -1156,46 +1241,6 @@ var PingPong;
     })(BaseApp);
     PingPong.App = App;
 })(PingPong || (PingPong = {}));
-/// <reference path="./Ball.ts"/>  
-/// <reference path="./Config.ts"/>
-/// <reference path="./Config.ts"/>
-/// <reference path="../../core/resources/Share.ts"/>
-var PingPong;
-(function (PingPong) {
-    var Share = Resource.Share;
-    var Game = (function () {
-        function Game() {
-            this.active = false;
-        }
-        Game.prototype.determineEnd = function (ball) {
-            if (!this.active) {
-                return;
-            }
-            var pos = ball.getBody().state.pos;
-            if (pos.y < PingPong.Config.TOP_LIMIT
-                || pos.y > Share.get('height') && this.active) {
-                this.end();
-            }
-        };
-        Game.prototype.start = function () {
-            this.active = true;
-        };
-        Game.prototype.stop = function () {
-            this.active = false;
-        };
-        Game.prototype.end = function () {
-            if (this.onEnd) {
-                this.onEnd();
-            }
-            this.stop();
-        };
-        Game.prototype.isActive = function () {
-            return this.active;
-        };
-        return Game;
-    })();
-    PingPong.Game = Game;
-})(PingPong || (PingPong = {}));
 var Util;
 (function (Util) {
     var Color = (function () {
@@ -1222,45 +1267,6 @@ var Util;
     })();
     Util.Color = Color;
 })(Util || (Util = {}));
-var Resource;
-(function (Resource) {
-    var Lyric = (function () {
-        function Lyric() {
-        }
-        Lyric.get = function (key) {
-            return Lyric.get(key);
-        };
-        Lyric.config = {
-            artist: 'youss',
-            songs: [{
-                    title: 'LE SCORE',
-                    lines: [
-                        "ne pas ceder",
-                        "ne pas ceder",
-                        "ne pas ceder",
-                        "ne pas ceder",
-                        "ne pas ceder",
-                        "ne pas ceder",
-                        "on s'en sort",
-                        "fais peter LE SCORE",
-                        "j'suis en plein essor",
-                        "on s'en sort",
-                        "fais peter LE SCORE",
-                        "on s'en sort",
-                        "fais peter LE SCORE",
-                        "fais peter LE SCORE",
-                        "on s'en sort",
-                        "j'fais peter LE SCORE",
-                        "peter LE SCORE",
-                        "on s'en sort",
-                        "j'suis en plein essor",
-                    ]
-                }]
-        };
-        return Lyric;
-    })();
-    Resource.Lyric = Lyric;
-})(Resource || (Resource = {}));
 /// <reference path="./core/assets/Font.ts"/>
 /// <reference path="./core/assets/Image.ts"/>
 /// <reference path="./core/assets/Sound.ts"/>

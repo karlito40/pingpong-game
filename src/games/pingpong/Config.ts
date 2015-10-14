@@ -17,7 +17,7 @@ module PingPong {
     static PLATFORM_TUTO = 'tuto';
     
     static SCROLL_SPEED = 5;
-    static PLATFORM_SPEED = 5/10;
+    static PLATFORM_SPEED = 0.5;
   }
   
 }

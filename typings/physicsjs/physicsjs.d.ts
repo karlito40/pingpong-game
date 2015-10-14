@@ -64,7 +64,7 @@ interface PixiRenderer extends PhysicsRenderer {
 }
 
 interface PhysicsBehavior {
-  
+  applyTo(object: any): any;
 }
 
 interface PhysicsUtil {
@@ -74,13 +74,13 @@ interface PhysicsUtil {
 }
 
 interface PhysicsEngine {
+  util: PhysicsUtil;
   (cb: (world: PhysicsWorld) => void): any;
   (options: any, cb: (world: PhysicsWorld) => void): any;
   body(name: string, options?: Object): PhysicsBody;
   renderer(name: string, options?: Object): CanvasRenderer|PixiRenderer;
   behavior(name: string, options?: Object): PhysicsBehavior;
-  
-  util: PhysicsUtil;
+  vector(x: number, y: number);
 }
 
 

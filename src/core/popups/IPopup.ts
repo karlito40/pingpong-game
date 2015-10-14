@@ -2,6 +2,7 @@
 
 module Popup {
   export interface IPopup extends PIXI.DisplayObject {
-    close();
+    close(): void;
+    open(): void;
   }
 }

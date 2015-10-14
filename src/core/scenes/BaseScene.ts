@@ -21,6 +21,10 @@ module Scene {
     abstract create(): void;
     abstract logic(): void;
     
+    static getCurrent(): BaseScene {
+      return Resource.Share.get(CURRENT_SCENE);
+    }
+    
     constructor(className: string) {
       super();
       

@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'Gobold'; 
+  src: url('../fonts/gobold/Gobold_Bold.ttf');
+}
+
+/*"Gobold Bold"*/
+
 html, body{
   background-color: #171717;
   color:#878787;
@@ -8,6 +15,13 @@ html, body{
   overflow-y: hidden;
 }
 
+.force-load-font {
+  font-family: 'Gobold'; 
+  opacity: 0;
+  position: absolute;
+  top: -2000px;
+  left: -2000px;  
+}
 
 .pjs-meta {
   position: absolute;

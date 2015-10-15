@@ -14,7 +14,7 @@ module PingPong {
     
     protected logoContainer: PIXI.Container;
     protected recordContainer: PIXI.Container;
-    protected nbGameContainer: PIXI.Container;
+    protected scoreContainer: PIXI.Container;
     protected platformerContainer: PIXI.Container;
     protected dialogueContainer: PIXI.Graphics;
     protected pencil: PIXI.Sprite;
@@ -51,8 +51,8 @@ module PingPong {
       this.recordContainer = this.buildRecord();
       this.addChild(this.recordContainer);
       
-      this.nbGameContainer = this.buildNbGame();  
-      this.addChild(this.nbGameContainer);
+      this.scoreContainer = this.buildScore();
+      this.addChild(this.scoreContainer);
       
       this.platformerContainer = this.buildPlatformer();
       this.addChild(this.platformerContainer);
@@ -89,8 +89,8 @@ module PingPong {
       tl.to(this.platformerContainer, 0.15, {alpha:0}, 'start');
       tl.to([
         this.recordContainer.position,
-        this.nbGameContainer.position
-      ], 0.3, {x: -100}, 'start');
+        this.scoreContainer.position
+      ], 0.13, {y: -200}, 'start');
       tl.to([
         this.character.position, 
         this.dialogueContainer.position
@@ -101,9 +101,8 @@ module PingPong {
     
     contentAnimation(): void {
       this.tlTuto = new TimelineMax();
-      this.tlTuto.to(this.character.position, 0.2, {y: '-=' + this.character.height});
+      this.tlTuto.to(this.character.position, 0.2, {y: '-=' + (this.character.height - 10)});
       this.tlTuto.to(this.dialogueContainer, 0.1, {alpha: 1}, '-=0.1');
-      this.tlTuto.to(this.dialogueContainer.position, 0.2, {y: '-=50'}, '-=0.15');
       this.tlTuto.to(this.dialogueContainer, 1, {rotation: 0, ease: Elastic.easeOut}, '-=0.2');
       
       var bridgeDuration = 0.7;
@@ -123,17 +122,24 @@ module PingPong {
     private buildLogo(): PIXI.Container {
       var container = new PIXI.Container();
       
-      var youssyText = new PIXI.extras.BitmapText("Youssy", {font: "60px OogieBoogie"});
+      var youssyText = new PIXI.Text("Youssy", {
+        font: "45px Gobold",
+        fill: 0xab8951
+      });
       youssyText.position.x = Share.get('width')/2 - youssyText.width/2;
       
-      var ballText = new PIXI.extras.BitmapText("Ball", {font: "60px OogieBoogie"});
-      ballText.position.x = Share.get('width')/2 - ballText.width/2;
-      ballText.position.y = 45;
+      var ballText = new PIXI.Text("Ball", {
+        font: "45px Gobold",
+        fill: 0xab8951
+      });
+      Share.set('ballText', ballText);
+      ballText.position.x = Share.get('width')/2 - ballText.width/2 + 30;
+      ballText.position.y = 39;
       
       container.addChild(youssyText);
       container.addChild(ballText);
       
-      container.position.y = 60;
+      container.position.y = 70;
       
       return container;
       
@@ -143,27 +149,59 @@ module PingPong {
      * Construct the record container
      */
     private buildRecord(): PIXI.Container {
-      var ballTexture = Share.get('resources')['youssy-ball'].texture;
       
+      var container = this.buildTextContainer(this.record.toString(), 'gold');
+      container.position.y -= 5;
+      container.position.x = Share.get('width')/2 - container.width - 2;
+      
+      return container;
+    }
+    
+    private buildScore(): PIXI.Container {
+      var container = this.buildTextContainer(this.score.toString(), 'brown');
+      container.position.y -= 5;
+      container.position.x = Share.get('width')/2 + 2;
+      
+      return container;
+    }
+    
+    private buildTextContainer(text: string, color: string): PIXI.Container {
       var container = new PIXI.Container();
-      container.position.y = 15;
       
-      var recordBgTexture = Share.get('resources')['bg-record'].texture;
-      var recordBg = new PIXI.extras.TilingSprite(recordBgTexture, 80, 23);
-      container.addChild(recordBg);
-      
-      var recordText = new PIXI.extras.BitmapText(this.record.toString(), {
-        font: "15px OogieBoogieMin"
+      var textContainer = new PIXI.Container();
+      var recordText = new PIXI.Text(text, {
+        font: "16px Gobold",
+        fill: 0xFFFFFF
       });
-      recordText.position.x = container.width - recordText.width - 25;    
-      container.addChild(recordText);
       
-      var recordIco = new PIXI.Sprite(ballTexture);
-      recordIco.scale.set(0.6);
-      recordIco.position.y = -5;
-      recordIco.position.x = container.width - 20;
+      var shadowText = new PIXI.Text(text, {
+        font: "16px Gobold",
+        fill: 0x4c2815
+      });
+      shadowText.position.x = -1;
+      shadowText.position.y = -1;
       
-      container.addChild(recordIco);
+      textContainer.addChild(shadowText);
+      textContainer.addChild(recordText);
+      
+      textContainer.position.y = 14;
+      textContainer.position.x = 10;
+      
+      var leftCorner = new PIXI.Sprite(Share.get('resources')['left-' + color].texture);
+      container.addChild(leftCorner);
+      
+      var center = new PIXI.extras.TilingSprite(Share.get('resources')['repeat-' + color].texture, textContainer.width + 20, 50);
+      center.position.x = leftCorner.width;
+      center.addChild(textContainer);
+      
+      container.addChild(center);
+      
+      var rightCorner = new PIXI.Sprite(Share.get('resources')['left-' + color].texture);
+      rightCorner.scale.x = -1;
+      rightCorner.position.x = container.width + leftCorner.width;
+
+      container.addChild(rightCorner);
+  
       
       return container;
     }
@@ -243,13 +281,6 @@ module PingPong {
       
       character.position.x = 10;
       character.position.y = Share.get('height');
-      
-      var recordText = new PIXI.extras.BitmapText(this.record.toString(), {
-        font: "25px OogieBoogie"
-      });
-      recordText.position.x = character.width/2 - recordText.width/2;
-      recordText.position.y = 35;
-      character.addChild(recordText);
     
       return character;
     } 
@@ -262,13 +293,13 @@ module PingPong {
       var dialHeight = 100;
       
       var container = new PIXI.Graphics();
-      container.beginFill(0xFFFFFF);
-      container.lineStyle(3, 0x000000, 1);
+      container.beginFill(0x171715);
+      container.lineStyle(3, 0x3c3c3b, 1);
       container.drawRoundedRect(0, 0, dialWidth, dialHeight, 5);
       container.endFill();      
       
       container.position.x = dialX;
-      container.position.y = Share.get('height') - this.character.height + 70;
+      container.position.y = Share.get('height') - container.height - 20;
       container.rotation = Util.Math2.degToRad(40);
       container.alpha = 0;
       
@@ -279,7 +310,8 @@ module PingPong {
       }
       
       var text = new PIXI.Text(s, {
-        font: "17px Arial",
+        font: "17px Gobold",
+        fill: 0xFFFFFF,
         wordWrap: true,
         wordWrapWidth: dialWidth - 20,
       });

@@ -1,16 +1,21 @@
 /// <reference path="./BaseScene.ts"/>
+/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
 
 module Scene {
-  export class SplashScene extends BaseScene {
+  export abstract class SplashScene extends BaseScene {
     
     static MIN_DISPLAY = 1000;
     
     protected color: number;
     protected startAt: number;
+    protected auto: boolean;
     
-    constructor(color?: number) {
+    abstract buildLogo(): PIXI.Sprite;
+    
+    constructor(auto?: boolean, color?: number) {
       super('SplashScene');
-      this.color = color || 0x048cff;  
+      this.color = color;  
+      this.auto = auto || false; 
     }
     
     create(): void {
@@ -21,9 +26,7 @@ module Scene {
       
       this.addChild(graph);
       
-      var logoTexture = this.Share.get('resources')['fantouch'].texture;
-      var logo = new PIXI.Sprite(logoTexture);
-      logo.scale.set(0.8, 0.8);
+      var logo = this.buildLogo();
       logo.anchor.set(0.5, 0.5);
       logo.position.set(this.Share.get('width')/2, this.Share.get('height')/2);
       
@@ -31,9 +34,12 @@ module Scene {
     }
     
     logic(): void {
-      // setTimeout(() => {
-      //   this.close();  
-      // }, 3000)
+      if(this.auto) {
+        setTimeout(() => {
+          this.close();  
+        }, SplashScene.MIN_DISPLAY + 500);  
+      }
+      
     }
     
     start(): void {

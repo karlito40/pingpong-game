@@ -150,7 +150,11 @@ var PingPong;
             this.bg = new PIXI.extras.TilingSprite(cloudTexture, 1192, 800);
             this.addChild(this.bg);
             // Altitude Bitmap
-            this.altitudeText = new PIXI.extras.BitmapText('', { font: "30px OogieBoogie" });
+            // this.altitudeText = new PIXI.extras.BitmapText('', {font: "30px OogieBoogie"});
+            this.altitudeText = new PIXI.Text('', {
+                font: "18px Gobold",
+                fill: 0xFFFFFF
+            });
             this.replaceAltitudeText();
             this.addChild(this.altitudeText);
         };
@@ -173,11 +177,11 @@ var PingPong;
                     this.recordSepContainer = new PIXI.Container();
                     var sepTexture = Share.get('resources').sep.texture;
                     var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
-                    sep.tint = 0x000000;
-                    var stepText = new PIXI.extras.BitmapText('RECORD', {
-                        font: "30px OogieBoogie",
+                    sep.tint = 0xab8951;
+                    var stepText = new PIXI.Text('RECORD', {
+                        font: "30px Gobold",
                         // tint: 0xee1198
-                        tint: 0x000000
+                        fill: 0xab8951
                     });
                     stepText.position.set(10, 10);
                     this.recordSepContainer.addChild(sep);
@@ -195,13 +199,18 @@ var PingPong;
                             stage.removeChild(this.sepContainer);
                         }
                         this.sepContainer = new PIXI.Container();
-                        this.sepContainer.alpha = 0.1;
+                        this.sepContainer.alpha = 0.3;
+                        // this.sepContainer.alpha = 0.1;
                         var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
-                        sep.tint = 0x000000;
+                        // sep.tint = 0xFFFFFF;
                         var stepInd = currentStep * PingPong.Config.STEP_ALTITUDE;
-                        var stepText = new PIXI.extras.BitmapText(stepInd + ' m', {
-                            font: "30px OogieBoogie",
-                            tint: 0x000000
+                        // var stepText = new PIXI.extras.BitmapText(stepInd + ' m', {
+                        //   font: "30px OogieBoogie",
+                        //   tint: 0x000000
+                        // });
+                        var stepText = new PIXI.Text(stepInd + ' m', {
+                            font: "30px Gobold",
+                            fill: 0xFFFFFF
                         });
                         stepText.position.set(10, 10);
                         this.sepContainer.addChild(sep);
@@ -405,7 +414,11 @@ var PingPong;
         };
         Ball.prototype.start = function () {
             this.active = true;
-            // this.body.view.scale.set(1, 1);
+            if (this.staticAnim) {
+                this.staticAnim.clear();
+                this.staticAnim = null;
+            }
+            this.body.view.scale.set(1, 1);
             this.body.treatment = 'dynamic';
         };
         Ball.prototype.stop = function () {
@@ -487,8 +500,12 @@ var PingPong;
             }
             var widthScene = Share.get('width');
             var onomatope = this.song.lines[this.line];
-            var text = new PIXI.extras.BitmapText(onomatope, {
-                font: "30px OogieBoogie"
+            // var text = new PIXI.extras.BitmapText(onomatope, {
+            //   font: "30px OogieBoogie"
+            // });
+            var text = new PIXI.Text(onomatope, {
+                font: "20px Gobold",
+                fill: 0xFFFFFF
             });
             text.position.y = position.y - 30;
             text.position.x = position.x + 30;
@@ -744,8 +761,10 @@ var PingPong;
             this.addChild(this.logoContainer);
             this.recordContainer = this.buildRecord();
             this.addChild(this.recordContainer);
-            this.nbGameContainer = this.buildNbGame();
-            this.addChild(this.nbGameContainer);
+            this.scoreContainer = this.buildScore();
+            this.addChild(this.scoreContainer);
+            // this.nbGameContainer = this.buildNbGame();  
+            // this.addChild(this.nbGameContainer);
             this.platformerContainer = this.buildPlatformer();
             this.addChild(this.platformerContainer);
             this.pencil = this.buildPencil(this.platformerContainer.position);
@@ -773,8 +792,8 @@ var PingPong;
             tl.to(this.platformerContainer, 0.15, { alpha: 0 }, 'start');
             tl.to([
                 this.recordContainer.position,
-                this.nbGameContainer.position
-            ], 0.3, { x: -100 }, 'start');
+                this.scoreContainer.position
+            ], 0.13, { y: -200 }, 'start');
             tl.to([
                 this.character.position,
                 this.dialogueContainer.position
@@ -783,9 +802,9 @@ var PingPong;
         };
         StarterPopup.prototype.contentAnimation = function () {
             this.tlTuto = new TimelineMax();
-            this.tlTuto.to(this.character.position, 0.2, { y: '-=' + this.character.height });
+            this.tlTuto.to(this.character.position, 0.2, { y: '-=' + (this.character.height - 10) });
             this.tlTuto.to(this.dialogueContainer, 0.1, { alpha: 1 }, '-=0.1');
-            this.tlTuto.to(this.dialogueContainer.position, 0.2, { y: '-=50' }, '-=0.15');
+            // this.tlTuto.to(this.dialogueContainer.position, 0.2, {y: '-=50'}, '-=0.15');
             this.tlTuto.to(this.dialogueContainer, 1, { rotation: 0, ease: Elastic.easeOut }, '-=0.2');
             var bridgeDuration = 0.7;
             var pencilDestX = this.bridgeWidth + this.pencil.width / 2 + 13;
@@ -800,36 +819,68 @@ var PingPong;
          */
         StarterPopup.prototype.buildLogo = function () {
             var container = new PIXI.Container();
-            var youssyText = new PIXI.extras.BitmapText("Youssy", { font: "60px OogieBoogie" });
+            // var youssyText = new PIXI.extras.BitmapText("Youssy", {font: "60px OogieBoogie"});
+            var youssyText = new PIXI.Text("Youssy", {
+                font: "45px Gobold",
+                fill: 0xab8951
+            });
             youssyText.position.x = Share.get('width') / 2 - youssyText.width / 2;
-            var ballText = new PIXI.extras.BitmapText("Ball", { font: "60px OogieBoogie" });
-            ballText.position.x = Share.get('width') / 2 - ballText.width / 2;
-            ballText.position.y = 45;
+            // var ballText = new PIXI.extras.BitmapText("Ball", {font: "60px OogieBoogie"});
+            var ballText = new PIXI.Text("Ball", {
+                font: "45px Gobold",
+                fill: 0xab8951
+            });
+            Share.set('ballText', ballText);
+            ballText.position.x = Share.get('width') / 2 - ballText.width / 2 + 30;
+            // ballText.position.y = 45;
+            ballText.position.y = 39;
             container.addChild(youssyText);
             container.addChild(ballText);
-            container.position.y = 60;
+            container.position.y = 70;
             return container;
         };
         /**
          * Construct the record container
          */
         StarterPopup.prototype.buildRecord = function () {
-            var ballTexture = Share.get('resources')['youssy-ball'].texture;
+            var container = this.buildTextContainer(this.record.toString(), 'gold');
+            container.position.y -= 5;
+            container.position.x = Share.get('width') / 2 - container.width - 2;
+            return container;
+        };
+        StarterPopup.prototype.buildScore = function () {
+            var container = this.buildTextContainer(this.score.toString(), 'brown');
+            container.position.y -= 5;
+            container.position.x = Share.get('width') / 2 + 2;
+            return container;
+        };
+        StarterPopup.prototype.buildTextContainer = function (text, color) {
             var container = new PIXI.Container();
-            container.position.y = 15;
-            var recordBgTexture = Share.get('resources')['bg-record'].texture;
-            var recordBg = new PIXI.extras.TilingSprite(recordBgTexture, 80, 23);
-            container.addChild(recordBg);
-            var recordText = new PIXI.extras.BitmapText(this.record.toString(), {
-                font: "15px OogieBoogieMin"
+            var textContainer = new PIXI.Container();
+            var recordText = new PIXI.Text(text, {
+                font: "16px Gobold",
+                fill: 0xFFFFFF
             });
-            recordText.position.x = container.width - recordText.width - 25;
-            container.addChild(recordText);
-            var recordIco = new PIXI.Sprite(ballTexture);
-            recordIco.scale.set(0.6);
-            recordIco.position.y = -5;
-            recordIco.position.x = container.width - 20;
-            container.addChild(recordIco);
+            var shadowText = new PIXI.Text(text, {
+                font: "16px Gobold",
+                fill: 0x4c2815
+            });
+            shadowText.position.x = -1;
+            shadowText.position.y = -1;
+            textContainer.addChild(shadowText);
+            textContainer.addChild(recordText);
+            textContainer.position.y = 14;
+            textContainer.position.x = 10;
+            var leftCorner = new PIXI.Sprite(Share.get('resources')['left-' + color].texture);
+            container.addChild(leftCorner);
+            var center = new PIXI.extras.TilingSprite(Share.get('resources')['repeat-' + color].texture, textContainer.width + 20, 50);
+            center.position.x = leftCorner.width;
+            center.addChild(textContainer);
+            container.addChild(center);
+            var rightCorner = new PIXI.Sprite(Share.get('resources')['left-' + color].texture);
+            rightCorner.scale.x = -1;
+            rightCorner.position.x = container.width + leftCorner.width;
+            container.addChild(rightCorner);
             return container;
         };
         /**
@@ -887,12 +938,6 @@ var PingPong;
             var character = new PIXI.Sprite(youssTexture);
             character.position.x = 10;
             character.position.y = Share.get('height');
-            var recordText = new PIXI.extras.BitmapText(this.record.toString(), {
-                font: "25px OogieBoogie"
-            });
-            recordText.position.x = character.width / 2 - recordText.width / 2;
-            recordText.position.y = 35;
-            character.addChild(recordText);
             return character;
         };
         StarterPopup.prototype.buildDialogue = function () {
@@ -902,12 +947,14 @@ var PingPong;
             dialWidth = Math.min(dialWidth, 300);
             var dialHeight = 100;
             var container = new PIXI.Graphics();
-            container.beginFill(0xFFFFFF);
-            container.lineStyle(3, 0x000000, 1);
+            // container.beginFill(0xFFFFFF);
+            // container.beginFill(0x3c3c3b);
+            container.beginFill(0x171715);
+            container.lineStyle(3, 0x3c3c3b, 1);
             container.drawRoundedRect(0, 0, dialWidth, dialHeight, 5);
             container.endFill();
             container.position.x = dialX;
-            container.position.y = Share.get('height') - this.character.height + 70;
+            container.position.y = Share.get('height') - container.height - 20;
             container.rotation = Util.Math2.degToRad(40);
             container.alpha = 0;
             var s = 'Fais peter le score !';
@@ -915,7 +962,8 @@ var PingPong;
                 s += '\n' + this.score + ' points ';
             }
             var text = new PIXI.Text(s, {
-                font: "17px Arial",
+                font: "17px Gobold",
+                fill: 0xFFFFFF,
                 wordWrap: true,
                 wordWrapWidth: dialWidth - 20
             });
@@ -1196,13 +1244,15 @@ var PingPong;
     PingPong.GameScene = GameScene;
 })(PingPong || (PingPong = {}));
 /// <reference path="./BaseScene.ts"/>
+/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
 var Scene;
 (function (Scene) {
     var SplashScene = (function (_super) {
         __extends(SplashScene, _super);
-        function SplashScene(color) {
+        function SplashScene(auto, color) {
             _super.call(this, 'SplashScene');
-            this.color = color || 0x048cff;
+            this.color = color;
+            this.auto = auto || false;
         }
         SplashScene.prototype.create = function () {
             var graph = new PIXI.Graphics();
@@ -1210,17 +1260,18 @@ var Scene;
             graph.drawRect(0, 0, this.Share.get('width'), this.Share.get('height'));
             graph.endFill();
             this.addChild(graph);
-            var logoTexture = this.Share.get('resources')['fantouch'].texture;
-            var logo = new PIXI.Sprite(logoTexture);
-            logo.scale.set(0.8, 0.8);
+            var logo = this.buildLogo();
             logo.anchor.set(0.5, 0.5);
             logo.position.set(this.Share.get('width') / 2, this.Share.get('height') / 2);
             this.addChild(logo);
         };
         SplashScene.prototype.logic = function () {
-            // setTimeout(() => {
-            //   this.close();  
-            // }, 3000)
+            var _this = this;
+            if (this.auto) {
+                setTimeout(function () {
+                    _this.close();
+                }, SplashScene.MIN_DISPLAY + 500);
+            }
         };
         SplashScene.prototype.start = function () {
             this.startAt = Date.now();
@@ -1239,6 +1290,43 @@ var Scene;
         return SplashScene;
     })(Scene.BaseScene);
     Scene.SplashScene = SplashScene;
+})(Scene || (Scene = {}));
+/// <reference path="../../core/scenes/SplashScene.ts"/>
+var PingPong;
+(function (PingPong) {
+    var SplashScene = (function (_super) {
+        __extends(SplashScene, _super);
+        function SplashScene() {
+            _super.apply(this, arguments);
+        }
+        SplashScene.prototype.buildLogo = function () {
+            var logoTexture = this.Share.get('resources')['youssy-splash'].texture;
+            var logo = new PIXI.Sprite(logoTexture);
+            logo.scale.set(0.8, 0.8);
+            return logo;
+        };
+        return SplashScene;
+    })(Scene.SplashScene);
+    PingPong.SplashScene = SplashScene;
+})(PingPong || (PingPong = {}));
+/// <reference path="./SplashScene.ts"/>
+/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
+var Scene;
+(function (Scene) {
+    var FantouchScene = (function (_super) {
+        __extends(FantouchScene, _super);
+        function FantouchScene(auto, color) {
+            _super.call(this, auto, color || 0x048cff);
+        }
+        FantouchScene.prototype.buildLogo = function () {
+            var logoTexture = this.Share.get('resources')['fantouch'].texture;
+            var logo = new PIXI.Sprite(logoTexture);
+            logo.scale.set(0.8, 0.8);
+            return logo;
+        };
+        return FantouchScene;
+    })(Scene.SplashScene);
+    Scene.FantouchScene = FantouchScene;
 })(Scene || (Scene = {}));
 /// <reference path="./LoaderController.ts"/>
 /// <reference path="./ILoadable.ts"/>
@@ -1360,7 +1448,8 @@ var Asset;
 })(Asset || (Asset = {}));
 /// <reference path="./GameScene.ts"/>
 /// <reference path="./Physic.ts"/>
-/// <reference path="../../core/scenes/SplashScene.ts"/>
+/// <reference path="./SplashScene.ts"/>
+/// <reference path="../../core/scenes/FantouchScene.ts"/>
 /// <reference path="../../core/BaseApp.ts"/>
 /// <reference path="../../core/assets/Font.ts"/>
 /// <reference path="../../core/assets/Image.ts"/>
@@ -1377,19 +1466,22 @@ var PingPong;
         App.prototype.start = function () {
             var _this = this;
             var gameScene = new PingPong.GameScene(this.physic);
-            var splashScene = new Scene.SplashScene();
-            splashScene.onClose = function () {
-                gameScene.start();
-            };
+            var splashScene = new PingPong.SplashScene(true, 0x000000);
+            splashScene.onClose = gameScene.start.bind(gameScene);
+            var fantouchScene = new Scene.FantouchScene();
+            fantouchScene.onClose = splashScene.start.bind(splashScene);
             // Load the app asset
             this.loaderEntry.load(function () {
                 console.log('loader entry complete');
-                splashScene.start();
+                fantouchScene.start();
                 // Load the game asset
                 _this.loaderGame
-                    .add(new Asset.Font('OogieBoogie', '/games/fonts/OogieBoogie/OogieBoogie.fnt'))
-                    .add(new Asset.Font('OogieBoogieMin', '/games/fonts/OogieBoogie/OogieBoogieMin.fnt'))
+                    .add(new Asset.Image('youssy-splash', '/games/images/youssy-splash.png'))
                     .add(new Asset.Image('youssy-ball', '/games/images/youssy-ball.png'))
+                    .add(new Asset.Image('left-gold', '/games/images/left-gold.png'))
+                    .add(new Asset.Image('repeat-gold', '/games/images/repeat-gold.png'))
+                    .add(new Asset.Image('repeat-brown', '/games/images/repeat-brown.png'))
+                    .add(new Asset.Image('left-brown', '/games/images/left-brown.png'))
                     .add(new Asset.Image('bg-cloud', '/games/images/bg-cloud.png'))
                     .add(new Asset.Image('bg-record', '/games/images/bg-record.png'))
                     .add(new Asset.Image('bg-party', '/games/images/bg-party.png'))
@@ -1400,7 +1492,7 @@ var PingPong;
                     .add(new Asset.Image('sep', '/games/images/sep.png'));
                 _this.loaderGame.load(function () {
                     console.log('loader game complete');
-                    splashScene.close();
+                    fantouchScene.close();
                 });
             });
         };

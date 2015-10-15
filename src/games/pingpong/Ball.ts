@@ -67,7 +67,11 @@ module PingPong {
     
     start(): void {
       this.active = true;
-      // this.body.view.scale.set(1, 1);
+      if(this.staticAnim) {
+        this.staticAnim.clear();
+        this.staticAnim = null;
+      }
+      this.body.view.scale.set(1, 1);
       this.body.treatment = 'dynamic';
     }
     

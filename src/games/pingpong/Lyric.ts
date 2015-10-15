@@ -62,10 +62,10 @@ module PingPong {
       
       var widthScene = Share.get('width');
       var onomatope = this.song.lines[this.line];
-      var text = new PIXI.extras.BitmapText(onomatope, {
-        font: "30px OogieBoogie"
+      var text = new PIXI.Text(onomatope, {
+        font: "20px Gobold",
+        fill: 0xFFFFFF
       });
-      
       text.position.y = position.y - 30;
       text.position.x = position.x + 30;
       var xEnd = text.position.x + text.width;

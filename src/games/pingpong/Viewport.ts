@@ -13,7 +13,7 @@ module PingPong {
   export class Viewport extends PIXI.Container {
     
     protected bg: PIXI.extras.TilingSprite;
-    protected altitudeText: PIXI.extras.BitmapText;
+    protected altitudeText: PIXI.Text;
     protected altitude: number;
     protected score: number;
     protected widthScene: number;
@@ -72,7 +72,10 @@ module PingPong {
       this.addChild(this.bg);
       
       // Altitude Bitmap
-      this.altitudeText = new PIXI.extras.BitmapText('', {font: "30px OogieBoogie"});
+      this.altitudeText = new PIXI.Text('', {
+        font: "18px Gobold",
+        fill: 0xFFFFFF
+      });
       this.replaceAltitudeText();
       
       this.addChild(this.altitudeText);
@@ -105,11 +108,10 @@ module PingPong {
           
           var sepTexture = Share.get('resources').sep.texture;
           var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
-          sep.tint = 0x000000;
-          var stepText = new PIXI.extras.BitmapText('RECORD', {
-            font: "30px OogieBoogie",
-            // tint: 0xee1198
-            tint: 0x000000
+          sep.tint = 0xab8951;
+          var stepText = new PIXI.Text('RECORD', {
+            font: "30px Gobold",
+            fill: 0xab8951
           });
           stepText.position.set(10, 10);
           
@@ -137,15 +139,14 @@ module PingPong {
             }
             
             this.sepContainer = new PIXI.Container();
-            this.sepContainer.alpha = 0.1;
+            this.sepContainer.alpha = 0.3;
             
             var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
-            sep.tint = 0x000000;
           
             var stepInd = currentStep * Config.STEP_ALTITUDE;
-            var stepText = new PIXI.extras.BitmapText(stepInd + ' m', {
-              font: "30px OogieBoogie",
-              tint: 0x000000
+            var stepText = new PIXI.Text(stepInd + ' m', {
+              font: "30px Gobold",
+              fill: 0xFFFFFF
             });
             stepText.position.set(10, 10);
             

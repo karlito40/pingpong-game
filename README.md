@@ -9,10 +9,8 @@
 
 ## Todo
 
-1. Add end game
-2. Use css font instead of bitmap (FXAA not working on mobile)
+2. Use texturepacker... But the customization will be harder
 3. Add a progressive progression
-4. Add asset from alexandre
 
 ## Scores
 

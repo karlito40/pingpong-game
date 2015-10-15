@@ -71,6 +71,7 @@ module PingPong {
       this.buildingPlatform = new Platform(this.from, this.to, PLATFORM_TYPE.STATIC);
       this.physic.addBody(this.buildingPlatform.getBody());
       
+      this.buildingPlatform.onBallCollision = this.onRelease.bind(this);     
     }
     
     onRelease(): void {
@@ -78,6 +79,7 @@ module PingPong {
         return;
       }
       
+      this.draging = false;
       this.cleanBuildingPlatform(); 
       this.disableStaticPlatform();
       
@@ -127,9 +129,9 @@ module PingPong {
       return this.nbPlatform;
     }
     
-    private cleanBuildingPlatform() {
+    private cleanBuildingPlatform(): void {
       if(this.buildingPlatform) {
-        this.physic.removeBody(this.buildingPlatform.getBody());
+        this.physic.removeBody(this.buildingPlatform.getBody());  
         this.buildingPlatform = null;
       }
     }

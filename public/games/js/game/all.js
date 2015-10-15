@@ -19,31 +19,42 @@ var Resource;
     })();
     Resource.Share = Share;
 })(Resource || (Resource = {}));
-/// <reference path="./LoaderController.ts"/>
-/// <reference path="./ILoadable.ts"/>
-/// <reference path="../resources/Share.ts"/>
-var Loader = (function () {
-    function Loader(controller) {
-        this.controller = controller;
-        this.assets = new Array();
-    }
-    Loader.prototype.add = function (asset) {
-        this.assets.push(asset);
-        this.controller.add(asset.getAlias(), asset.getPath());
-        return this;
-    };
-    Loader.prototype.load = function (cb) {
-        this.controller.load(function (loader, resources) {
-            var res = Resource.Share.get('resources') || {};
-            for (var key in resources) {
-                res[key] = resources[key];
-            }
-            Resource.Share.set('resources', res);
-            cb();
-        });
-    };
-    return Loader;
-})();
+var PingPong;
+(function (PingPong) {
+    var Config = (function () {
+        function Config() {
+        }
+        Config.DEBUG = false;
+        Config.FIREWORK_ON_STEP = false;
+        Config.FIREWORK_ON_RECORD = false;
+        Config.STEP_THEME = false;
+        Config.RAINBOW_STEP = 10;
+        Config.ALPHA_TUTO = 0.25;
+        Config.TRAIL_PARTICLE_DELAY = 70;
+        Config.GRAVITY = 0.002;
+        Config.JUMP_BY = -0.7;
+        Config.GARBAGE_DELAY = 2000;
+        Config.STEP_ALTITUDE = 1000;
+        Config.TOP_LIMIT = -500;
+        Config.GARBAGE_TYPE = ['trampoline', 'particle'];
+        Config.PLATFORM_TUTO = 'tuto';
+        Config.SCROLL_SPEED = 5;
+        Config.PLATFORM_SPEED = 0.5;
+        return Config;
+    })();
+    PingPong.Config = Config;
+})(PingPong || (PingPong = {}));
+var PingPong;
+(function (PingPong) {
+    var Constant = (function () {
+        function Constant() {
+        }
+        Constant.NB_GAME = 'nb_game';
+        Constant.RECORD = 'record';
+        return Constant;
+    })();
+    PingPong.Constant = Constant;
+})(PingPong || (PingPong = {}));
 var Resource;
 (function (Resource) {
     var SystemStorage = (function () {
@@ -86,6 +97,138 @@ var Resource;
     })();
     Resource.Storage = Storage;
 })(Resource || (Resource = {}));
+/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
+/// <reference path="../../core/resources/Share.ts"/>
+/// <reference path="./Config.ts"/>
+/// <reference path="./Constant.ts"/>
+/// <reference path="../../core/resources/Storage.ts"/>
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var PingPong;
+(function (PingPong) {
+    var Storage = Resource.Storage;
+    var Share = Resource.Share;
+    var ALTITUDE_PADDING = 10;
+    var Viewport = (function (_super) {
+        __extends(Viewport, _super);
+        function Viewport() {
+            _super.call(this);
+            this.widthScene = Resource.Share.get('width');
+            this.heightScene = Resource.Share.get('height');
+            this.active = false;
+            this.altitude = 0;
+            this.create();
+        }
+        Viewport.prototype.start = function () {
+            this.active = true;
+            this.hasRecordDisplay = false;
+            this.steps = {};
+            this.altitude = 0;
+            this.score = 0;
+            this.record = Storage.get(PingPong.Constant.RECORD) || 0;
+        };
+        Viewport.prototype.stop = function () {
+            this.active = false;
+            this.score = this.altitude;
+            if (this.sepContainer) {
+                var stage = Share.get('stage');
+                stage.removeChild(this.sepContainer);
+                this.sepContainer = null;
+            }
+            if (this.recordSepContainer) {
+                var stage = Share.get('stage');
+                stage.removeChild(this.recordSepContainer);
+                this.recordSepContainer = null;
+            }
+        };
+        Viewport.prototype.create = function () {
+            // Background
+            var cloudTexture = Resource.Share.get('resources')['bg-cloud'].texture;
+            this.bg = new PIXI.extras.TilingSprite(cloudTexture, 1192, 800);
+            this.addChild(this.bg);
+            // Altitude Bitmap
+            this.altitudeText = new PIXI.extras.BitmapText('', { font: "30px OogieBoogie" });
+            this.replaceAltitudeText();
+            this.addChild(this.altitudeText);
+        };
+        Viewport.prototype.update = function () {
+            this.setY(this.bg.tilePosition.y + PingPong.Config.SCROLL_SPEED);
+            if (this.active) {
+                this.altitude += PingPong.Config.SCROLL_SPEED;
+                this.replaceAltitudeText();
+                if (this.sepContainer) {
+                    this.sepContainer.position.y += PingPong.Config.SCROLL_SPEED;
+                }
+                if (this.recordSepContainer) {
+                    this.recordSepContainer.position.y += PingPong.Config.SCROLL_SPEED;
+                }
+                var currentStep = Math.floor(this.altitude / PingPong.Config.STEP_ALTITUDE);
+                if (this.record
+                    && this.altitude >= this.record
+                    && !this.hasRecordDisplay
+                    && Math.floor(this.altitude / PingPong.Config.STEP_ALTITUDE) == currentStep) {
+                    this.recordSepContainer = new PIXI.Container();
+                    var sepTexture = Share.get('resources').sep.texture;
+                    var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
+                    sep.tint = 0x000000;
+                    var stepText = new PIXI.extras.BitmapText('RECORD', {
+                        font: "30px OogieBoogie",
+                        // tint: 0xee1198
+                        tint: 0x000000
+                    });
+                    stepText.position.set(10, 10);
+                    this.recordSepContainer.addChild(sep);
+                    this.recordSepContainer.addChild(stepText);
+                    Share.get('stage').addChildAt(this.recordSepContainer, 1);
+                    this.hasRecordDisplay = true;
+                }
+                // Well it's bad sorry
+                if (!this.steps[currentStep]) {
+                    this.steps[currentStep] = true;
+                    if (currentStep > 0) {
+                        var stage = Share.get('stage');
+                        var sepTexture = Share.get('resources').sep.texture;
+                        if (this.sepContainer) {
+                            stage.removeChild(this.sepContainer);
+                        }
+                        this.sepContainer = new PIXI.Container();
+                        this.sepContainer.alpha = 0.1;
+                        var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
+                        sep.tint = 0x000000;
+                        var stepInd = currentStep * PingPong.Config.STEP_ALTITUDE;
+                        var stepText = new PIXI.extras.BitmapText(stepInd + ' m', {
+                            font: "30px OogieBoogie",
+                            tint: 0x000000
+                        });
+                        stepText.position.set(10, 10);
+                        this.sepContainer.addChild(sep);
+                        this.sepContainer.addChild(stepText);
+                        stage.addChildAt(this.sepContainer, 1);
+                    }
+                }
+            }
+        };
+        Viewport.prototype.replaceAltitudeText = function () {
+            this.altitudeText.text = this.altitude + ' m';
+            this.altitudeText.position.x = this.widthScene - ALTITUDE_PADDING - this.altitudeText.width;
+            this.altitudeText.position.y = ALTITUDE_PADDING;
+        };
+        Viewport.prototype.setY = function (y) {
+            this.bg.tilePosition.y = y;
+        };
+        Viewport.prototype.getAltitude = function () {
+            return this.altitude;
+        };
+        Viewport.prototype.getScore = function () {
+            return this.score;
+        };
+        return Viewport;
+    })(PIXI.Container);
+    PingPong.Viewport = Viewport;
+})(PingPong || (PingPong = {}));
 var Resource;
 (function (Resource) {
     var Style = (function () {
@@ -115,16 +258,293 @@ var Resource;
     })();
     Resource.Style = Style;
 })(Resource || (Resource = {}));
+/// <reference path="../../../typings/physicsjs/physicsjs.d.ts"/>
+/// <reference path="../../core/resources/Share.ts"/>
+/// <reference path="../../core/resources/Style.ts"/>
+/// <reference path="./Config.ts"/>
+var PingPong;
+(function (PingPong) {
+    var Style = Resource.Style;
+    var Share = Resource.Share;
+    var Physic = (function () {
+        function Physic() {
+            this.updates = [];
+            Physics({}, this.onWorldReady.bind(this));
+        }
+        Physic.prototype.onWorldReady = function (world) {
+            var _this = this;
+            this.world = world;
+            this.renderer = Physics.renderer('pixi', {
+                el: 'viewport',
+                meta: PingPong.Config.DEBUG,
+                autoResize: true,
+                styles: {
+                    'color': Style.get('background'),
+                    'circle': Style.get('circle'),
+                    'rectangle': Style.get('line')
+                }
+            });
+            Share.set('width', this.renderer.width);
+            Share.set('height', this.renderer.height);
+            Share.set('renderer', this.renderer);
+            Share.set('stage', this.renderer.stage);
+            var gravity = Physics.behavior('constant-acceleration', {
+                acc: { x: 0, y: PingPong.Config.GRAVITY }
+            });
+            this.world.add([
+                this.renderer,
+                gravity,
+                Physics.behavior('body-impulse-response'),
+                Physics.behavior('body-collision-detection'),
+                Physics.behavior('sweep-prune'),
+                Physics.behavior('interactive', { el: this.renderer.el })
+                    .applyTo(world.find({ name: 'box' }))
+            ]);
+            Physics.util.ticker.on(function (time, dt) {
+                Share.set('dt', dt);
+                _this.world.step(time);
+            });
+            this.world.on('step', function () {
+                _this.world.render();
+                _this.updates.forEach(function (cb) {
+                    cb();
+                });
+            });
+            this.garbage();
+        };
+        Physic.prototype.addEvents = function (events) {
+            var _this = this;
+            events.forEach(function (event) {
+                for (var key in event) {
+                    _this.world.on(key, event[key]);
+                }
+            });
+        };
+        Physic.prototype.garbage = function () {
+            var _this = this;
+            var bodies = this.world.getBodies();
+            bodies.forEach(function (body) {
+                if (body.className
+                    && PingPong.Config.GARBAGE_TYPE.indexOf(body.className) != -1
+                    && body.state.pos.y > _this.renderer.height) {
+                    _this.world.remove(body);
+                }
+            });
+            setTimeout(this.garbage.bind(this), PingPong.Config.GARBAGE_DELAY);
+        };
+        Physic.prototype.addUpdate = function (cb) {
+            this.updates.push(cb);
+        };
+        Physic.prototype.addBody = function (objects) {
+            var _this = this;
+            if (Array.isArray(objects)) {
+                objects.forEach(function (object) {
+                    _this.world.add(object);
+                });
+            }
+            else {
+                this.world.add(objects);
+            }
+        };
+        Physic.prototype.removeBody = function (object) {
+            this.world.remove(object);
+        };
+        Physic.prototype.getWorld = function () {
+            return this.world;
+        };
+        return Physic;
+    })();
+    PingPong.Physic = Physic;
+})(PingPong || (PingPong = {}));
+/// <reference path="../../../typings/physicsjs/physicsjs.d.ts"/>
+/// <reference path="../../core/resources/Share.ts"/>
+/// <reference path="./Config.ts"/>  
+/// <reference path="./Physic.ts"/>  
+/// <reference path="../../../typings/greensock/greensock.d.ts"/>
+var PingPong;
+(function (PingPong) {
+    var Share = Resource.Share;
+    var Ball = (function () {
+        function Ball(physic) {
+            this.active = false;
+            this.physic = physic;
+            this.onLost = null;
+            this.body = Physics.body('circle', {
+                radius: 25,
+                x: Share.get('width') / 2,
+                y: 210,
+                restitution: 1,
+                cof: 1,
+                mass: 1000,
+                angle: 0,
+                treatment: 'static'
+            });
+            this.idName = 'ball';
+            this.body.idName = this.idName;
+            var ballTexture = Share.get('resources')['youssy-ball'].texture;
+            this.body.view = Share.get('renderer').createDisplay('sprite', {
+                texture: ballTexture,
+                anchor: {
+                    x: 0.5,
+                    y: 0.5
+                }
+            });
+            this.physic.addEvents([
+                this.getPhysicsEvents()
+            ]);
+            this.stop();
+        }
+        Ball.prototype.update = function () {
+            if (this.active
+                && (this.body.state.pos.y < PingPong.Config.TOP_LIMIT
+                    || this.body.state.pos.y > Share.get('height'))) {
+                if (this.onLost) {
+                    this.onLost();
+                }
+            }
+        };
+        Ball.prototype.start = function () {
+            this.active = true;
+            // this.body.view.scale.set(1, 1);
+            this.body.treatment = 'dynamic';
+        };
+        Ball.prototype.stop = function () {
+            this.active = false;
+            // this.body.view.scale.set(1, 1);
+            this.body.treatment = 'static';
+            this.body.state.pos.x = Share.get('width') / 2;
+            this.body.state.pos.y = 210;
+            if (!this.staticAnim) {
+                this.staticAnim = new TimelineMax({ yoyo: true, repeat: -1 });
+                this.staticAnim.to(this.body.view.scale, 0.2, { x: 0.8, y: 0.9 });
+            }
+        };
+        Ball.prototype.onCollision = function (data) {
+            var self = this;
+            var colliders = data.collisions;
+            var isBumpAllowed = false;
+            for (var i in colliders) {
+                var collider = colliders[i], bodyA = collider.bodyA, bodyB = collider.bodyB, platformCollider = null, ballCollider = null;
+                if (bodyA.idName == self.idName) {
+                    ballCollider = bodyA;
+                    platformCollider = bodyB;
+                }
+                else if (bodyB.idName == self.idName) {
+                    ballCollider = bodyB;
+                    platformCollider = bodyA;
+                }
+                if (ballCollider
+                    && ballCollider.state.pos.y < platformCollider.state.pos.y) {
+                    isBumpAllowed = true;
+                    break;
+                }
+            }
+            if (isBumpAllowed) {
+                // Force vy to be exactly the same no matter what
+                var vxBall = this.body.state.vel.x;
+                this.body.state.vel.set(vxBall, PingPong.Config.JUMP_BY);
+                if (this.onBump) {
+                    this.onBump(this.body.state.pos);
+                }
+            }
+            if (platformCollider) {
+                // platformCollider.platform.fall();
+                platformCollider.platform.ballCollision();
+            }
+        };
+        Ball.prototype.getPhysicsEvents = function () {
+            return {
+                'collisions:detected': this.onCollision.bind(this)
+            };
+        };
+        Ball.prototype.getBody = function () {
+            return this.body;
+        };
+        return Ball;
+    })();
+    PingPong.Ball = Ball;
+})(PingPong || (PingPong = {}));
+/// <reference path="../../core/resources/Share.ts"/>
+var PingPong;
+(function (PingPong) {
+    var Share = Resource.Share;
+    var Lyric = (function () {
+        function Lyric() {
+            var artistMap = Lyric.config[~~(Math.random() * Lyric.config.length)];
+            var songs = artistMap.songs;
+            this.song = songs[~~(Math.random() * songs.length)];
+            this.line = 0;
+        }
+        Lyric.prototype.next = function (position) {
+            var now = Date.now();
+            if (this.lastCollisionTime
+                && now - this.lastCollisionTime < 25) {
+                return;
+            }
+            this.lastCollisionTime = now;
+            if (!this.line || !this.song.lines[this.line]) {
+                this.line = 0;
+            }
+            var widthScene = Share.get('width');
+            var onomatope = this.song.lines[this.line];
+            var text = new PIXI.extras.BitmapText(onomatope, {
+                font: "30px OogieBoogie"
+            });
+            text.position.y = position.y - 30;
+            text.position.x = position.x + 30;
+            var xEnd = text.position.x + text.width;
+            if (xEnd > widthScene) {
+                var diff = xEnd - widthScene;
+                text.position.x -= diff + 40;
+                if (text.position.x < 0) {
+                    text.position.x = 20;
+                    text.scale.set(0.8, 0.8);
+                }
+                text.position.y += 40;
+            }
+            var stage = Share.get('stage');
+            stage.addChild(text);
+            TweenMax.to(text.position, 0.5, { y: '-=50', onComplete: function () {
+                    stage.removeChild(text);
+                } });
+            this.line++;
+        };
+        Lyric.config = [{
+                artist: 'youss',
+                songs: [{
+                        title: 'LE SCORE',
+                        lines: [
+                            "ne pas ceder",
+                            "ne pas ceder",
+                            "ne pas ceder",
+                            "ne pas ceder",
+                            "ne pas ceder",
+                            "ne pas ceder",
+                            "on s'en sort",
+                            "fais peter LE SCORE",
+                            "j'suis en plein essor",
+                            "on s'en sort",
+                            "fais peter LE SCORE",
+                            "on s'en sort",
+                            "fais peter LE SCORE",
+                            "fais peter LE SCORE",
+                            "on s'en sort",
+                            "j'fais peter LE SCORE",
+                            "peter LE SCORE",
+                            "on s'en sort",
+                            "j'suis en plein essor",
+                        ]
+                    }]
+            }];
+        return Lyric;
+    })();
+    PingPong.Lyric = Lyric;
+})(PingPong || (PingPong = {}));
 /// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
 /// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
 /// <reference path="../../../typings/greensock/greensock.d.ts"/>
 /// <reference path="../resources/Share.ts"/>
 /// <reference path="../popups/IPopup.ts"/>
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 var Scene;
 (function (Scene) {
     var CURRENT_SCENE = 'current_scene';
@@ -282,150 +702,6 @@ var Popup;
     })(PIXI.Container);
     Popup.BasePopup = BasePopup;
 })(Popup || (Popup = {}));
-/// <reference path="./BaseScene.ts"/>
-var Scene;
-(function (Scene) {
-    var SplashScene = (function (_super) {
-        __extends(SplashScene, _super);
-        function SplashScene(color) {
-            _super.call(this, 'SplashScene');
-            this.color = color || 0x048cff;
-        }
-        SplashScene.prototype.create = function () {
-            var graph = new PIXI.Graphics();
-            graph.beginFill(this.color);
-            graph.drawRect(0, 0, this.Share.get('width'), this.Share.get('height'));
-            graph.endFill();
-            this.addChild(graph);
-            var logoTexture = this.Share.get('resources')['fantouch'].texture;
-            var logo = new PIXI.Sprite(logoTexture);
-            logo.scale.set(0.8, 0.8);
-            logo.anchor.set(0.5, 0.5);
-            logo.position.set(this.Share.get('width') / 2, this.Share.get('height') / 2);
-            this.addChild(logo);
-        };
-        SplashScene.prototype.logic = function () {
-            // setTimeout(() => {
-            //   this.close();  
-            // }, 3000)
-        };
-        SplashScene.prototype.start = function () {
-            this.startAt = Date.now();
-            _super.prototype.start.call(this);
-        };
-        SplashScene.prototype.close = function () {
-            var dt = Date.now() - this.startAt;
-            if (dt > SplashScene.MIN_DISPLAY) {
-                _super.prototype.close.call(this);
-            }
-            else {
-                setTimeout(this.close.bind(this), dt);
-            }
-        };
-        SplashScene.MIN_DISPLAY = 1000;
-        return SplashScene;
-    })(Scene.BaseScene);
-    Scene.SplashScene = SplashScene;
-})(Scene || (Scene = {}));
-/// <reference path="../loaders/ILoadable.ts"/>
-var Asset;
-(function (Asset) {
-    var BaseAsset = (function () {
-        function BaseAsset(alias, path, type) {
-            this.alias = alias;
-            this.path = path;
-            this.type = type;
-        }
-        BaseAsset.prototype.getAlias = function () {
-            return this.alias;
-        };
-        BaseAsset.prototype.getPath = function () {
-            return this.path;
-        };
-        BaseAsset.prototype.getType = function () {
-            return this.type;
-        };
-        BaseAsset.prototype.setPath = function (path) {
-            this.path = path;
-            return this;
-        };
-        BaseAsset.prototype.setAlias = function (alias) {
-            this.alias = alias;
-            return this;
-        };
-        return BaseAsset;
-    })();
-    Asset.BaseAsset = BaseAsset;
-})(Asset || (Asset = {}));
-var Asset;
-(function (Asset) {
-    ;
-})(Asset || (Asset = {}));
-/// <reference path="./BaseAsset.ts"/>
-/// <reference path="./Type.ts"/>
-var Asset;
-(function (Asset) {
-    var Font = (function (_super) {
-        __extends(Font, _super);
-        function Font(alias, path) {
-            _super.call(this, alias, path, 2 /* FONT */);
-        }
-        return Font;
-    })(Asset.BaseAsset);
-    Asset.Font = Font;
-})(Asset || (Asset = {}));
-/// <reference path="./BaseAsset.ts"/>
-/// <reference path="./Type.ts"/>
-var Asset;
-(function (Asset) {
-    var Image = (function (_super) {
-        __extends(Image, _super);
-        function Image(alias, path) {
-            _super.call(this, alias, path, 0 /* IMAGE */);
-        }
-        return Image;
-    })(Asset.BaseAsset);
-    Asset.Image = Image;
-})(Asset || (Asset = {}));
-/// <reference path="./BaseAsset.ts"/>
-/// <reference path="./Type.ts"/>
-var Asset;
-(function (Asset) {
-    var Sound = (function (_super) {
-        __extends(Sound, _super);
-        function Sound(alias, path) {
-            _super.call(this, alias, path, 1 /* SOUND */);
-        }
-        return Sound;
-    })(Asset.BaseAsset);
-    Asset.Sound = Sound;
-})(Asset || (Asset = {}));
-var Util;
-(function (Util) {
-    var Color = (function () {
-        function Color() {
-        }
-        Color.componentToHex = function (c) {
-            var hex = c.toString(16);
-            return hex.length == 1 ? "0" + hex : hex;
-        };
-        Color.rgbToHax = function (rgb) {
-            var rgbList = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-            return "0x" +
-                Color.componentToHex(parseInt(rgbList[1]))
-                + Color.componentToHex(parseInt(rgbList[2]))
-                + Color.componentToHex(parseInt(rgbList[3]));
-        };
-        Color.hexaToColor = function (hexa) {
-            return '#' + hexa.toString().slice(2);
-        };
-        Color.colorToHexa = function (color) {
-            return '0x' + color.toString().slice(1);
-        };
-        return Color;
-    })();
-    Util.Color = Color;
-})(Util || (Util = {}));
 var Util;
 (function (Util) {
     var Math2 = (function () {
@@ -442,450 +718,6 @@ var Util;
     })();
     Util.Math2 = Math2;
 })(Util || (Util = {}));
-var PingPong;
-(function (PingPong) {
-    var Config = (function () {
-        function Config() {
-        }
-        Config.DEBUG = false;
-        Config.FIREWORK_ON_STEP = false;
-        Config.FIREWORK_ON_RECORD = false;
-        Config.STEP_THEME = false;
-        Config.RAINBOW_STEP = 10;
-        Config.ALPHA_TUTO = 0.25;
-        Config.TRAIL_PARTICLE_DELAY = 70;
-        Config.GRAVITY = 0.002;
-        Config.JUMP_BY = -0.7;
-        Config.GARBAGE_DELAY = 2000;
-        Config.STEP_ALTITUDE = 1000;
-        Config.TOP_LIMIT = -500;
-        Config.GARBAGE_TYPE = ['trampoline', 'particle'];
-        Config.PLATFORM_TUTO = 'tuto';
-        Config.SCROLL_SPEED = 5;
-        Config.PLATFORM_SPEED = 0.5;
-        return Config;
-    })();
-    PingPong.Config = Config;
-})(PingPong || (PingPong = {}));
-var PingPong;
-(function (PingPong) {
-    var Constant = (function () {
-        function Constant() {
-        }
-        Constant.NB_GAME = 'nb_game';
-        Constant.RECORD = 'record';
-        return Constant;
-    })();
-    PingPong.Constant = Constant;
-})(PingPong || (PingPong = {}));
-/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
-/// <reference path="../../core/resources/Share.ts"/>
-/// <reference path="./Config.ts"/>
-/// <reference path="./Constant.ts"/>
-/// <reference path="../../core/resources/Storage.ts"/>
-var PingPong;
-(function (PingPong) {
-    var Storage = Resource.Storage;
-    var Share = Resource.Share;
-    var ALTITUDE_PADDING = 10;
-    var Viewport = (function (_super) {
-        __extends(Viewport, _super);
-        function Viewport() {
-            _super.call(this);
-            this.widthScene = Resource.Share.get('width');
-            this.heightScene = Resource.Share.get('height');
-            this.active = false;
-            this.altitude = 0;
-            this.create();
-        }
-        Viewport.prototype.start = function () {
-            this.active = true;
-            this.hasRecordDisplay = false;
-            this.steps = {};
-            this.altitude = 0;
-            this.score = 0;
-            this.record = Storage.get(PingPong.Constant.RECORD) || 0;
-        };
-        Viewport.prototype.stop = function () {
-            this.active = false;
-            this.score = this.altitude;
-            if (this.sepContainer) {
-                var stage = Share.get('stage');
-                stage.removeChild(this.sepContainer);
-                this.sepContainer = null;
-            }
-            if (this.recordSepContainer) {
-                var stage = Share.get('stage');
-                stage.removeChild(this.recordSepContainer);
-                this.recordSepContainer = null;
-            }
-        };
-        Viewport.prototype.create = function () {
-            // Background
-            var cloudTexture = Resource.Share.get('resources')['bg-cloud'].texture;
-            this.bg = new PIXI.extras.TilingSprite(cloudTexture, 1192, 800);
-            this.addChild(this.bg);
-            // Altitude Bitmap
-            this.altitudeText = new PIXI.extras.BitmapText('', { font: "30px OogieBoogie" });
-            this.replaceAltitudeText();
-            this.addChild(this.altitudeText);
-        };
-        Viewport.prototype.update = function () {
-            this.setY(this.bg.tilePosition.y + PingPong.Config.SCROLL_SPEED);
-            if (this.active) {
-                this.altitude += PingPong.Config.SCROLL_SPEED;
-                this.replaceAltitudeText();
-                if (this.sepContainer) {
-                    this.sepContainer.position.y += PingPong.Config.SCROLL_SPEED;
-                }
-                if (this.recordSepContainer) {
-                    this.recordSepContainer.position.y += PingPong.Config.SCROLL_SPEED;
-                }
-                var currentStep = Math.floor(this.altitude / PingPong.Config.STEP_ALTITUDE);
-                if (this.record
-                    && this.altitude >= this.record
-                    && !this.hasRecordDisplay
-                    && Math.floor(this.altitude / PingPong.Config.STEP_ALTITUDE) == currentStep) {
-                    this.recordSepContainer = new PIXI.Container();
-                    var sepTexture = Share.get('resources').sep.texture;
-                    var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
-                    sep.tint = 0x000000;
-                    var stepText = new PIXI.extras.BitmapText('RECORD', {
-                        font: "30px OogieBoogie",
-                        // tint: 0xee1198
-                        tint: 0x000000
-                    });
-                    stepText.position.set(10, 10);
-                    this.recordSepContainer.addChild(sep);
-                    this.recordSepContainer.addChild(stepText);
-                    Share.get('stage').addChildAt(this.recordSepContainer, 1);
-                    this.hasRecordDisplay = true;
-                }
-                // Well it's bad sorry
-                if (!this.steps[currentStep]) {
-                    this.steps[currentStep] = true;
-                    if (currentStep > 0) {
-                        var stage = Share.get('stage');
-                        var sepTexture = Share.get('resources').sep.texture;
-                        if (this.sepContainer) {
-                            stage.removeChild(this.sepContainer);
-                        }
-                        this.sepContainer = new PIXI.Container();
-                        this.sepContainer.alpha = 0.1;
-                        var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
-                        sep.tint = 0x000000;
-                        var stepInd = currentStep * PingPong.Config.STEP_ALTITUDE;
-                        var stepText = new PIXI.extras.BitmapText(stepInd + ' m', {
-                            font: "30px OogieBoogie",
-                            tint: 0x000000
-                        });
-                        stepText.position.set(10, 10);
-                        this.sepContainer.addChild(sep);
-                        this.sepContainer.addChild(stepText);
-                        stage.addChildAt(this.sepContainer, 1);
-                    }
-                }
-            }
-        };
-        Viewport.prototype.replaceAltitudeText = function () {
-            this.altitudeText.text = this.altitude + ' m';
-            this.altitudeText.position.x = this.widthScene - ALTITUDE_PADDING - this.altitudeText.width;
-            this.altitudeText.position.y = ALTITUDE_PADDING;
-        };
-        Viewport.prototype.setY = function (y) {
-            this.bg.tilePosition.y = y;
-        };
-        Viewport.prototype.getAltitude = function () {
-            return this.altitude;
-        };
-        Viewport.prototype.getScore = function () {
-            return this.score;
-        };
-        return Viewport;
-    })(PIXI.Container);
-    PingPong.Viewport = Viewport;
-})(PingPong || (PingPong = {}));
-/// <reference path="../../../typings/physicsjs/physicsjs.d.ts"/>
-/// <reference path="../../core/resources/Share.ts"/>
-/// <reference path="../../core/resources/Style.ts"/>
-/// <reference path="./Config.ts"/>
-var PingPong;
-(function (PingPong) {
-    var Style = Resource.Style;
-    var Share = Resource.Share;
-    var Physic = (function () {
-        function Physic() {
-            this.updates = [];
-            Physics({}, this.onWorldReady.bind(this));
-        }
-        Physic.prototype.onWorldReady = function (world) {
-            var _this = this;
-            this.world = world;
-            this.renderer = Physics.renderer('pixi', {
-                el: 'viewport',
-                meta: PingPong.Config.DEBUG,
-                autoResize: true,
-                styles: {
-                    'color': Style.get('background'),
-                    'circle': Style.get('circle'),
-                    'rectangle': Style.get('line')
-                }
-            });
-            Share.set('width', this.renderer.width);
-            Share.set('height', this.renderer.height);
-            Share.set('renderer', this.renderer);
-            Share.set('stage', this.renderer.stage);
-            var gravity = Physics.behavior('constant-acceleration', {
-                acc: { x: 0, y: PingPong.Config.GRAVITY }
-            });
-            this.world.add([
-                this.renderer,
-                gravity,
-                Physics.behavior('body-impulse-response'),
-                Physics.behavior('body-collision-detection'),
-                Physics.behavior('sweep-prune'),
-                Physics.behavior('interactive', { el: this.renderer.el })
-                    .applyTo(world.find({ name: 'box' }))
-            ]);
-            Physics.util.ticker.on(function (time, dt) {
-                Share.set('dt', dt);
-                _this.world.step(time);
-            });
-            this.world.on('step', function () {
-                _this.world.render();
-                _this.updates.forEach(function (cb) {
-                    cb();
-                });
-            });
-            this.garbage();
-        };
-        Physic.prototype.addEvents = function (events) {
-            var _this = this;
-            events.forEach(function (event) {
-                for (var key in event) {
-                    _this.world.on(key, event[key]);
-                }
-            });
-        };
-        Physic.prototype.garbage = function () {
-            var _this = this;
-            var bodies = this.world.getBodies();
-            bodies.forEach(function (body) {
-                if (body.className
-                    && PingPong.Config.GARBAGE_TYPE.indexOf(body.className) != -1
-                    && body.state.pos.y > _this.renderer.height) {
-                    _this.world.remove(body);
-                }
-            });
-            setTimeout(this.garbage.bind(this), PingPong.Config.GARBAGE_DELAY);
-        };
-        Physic.prototype.addUpdate = function (cb) {
-            this.updates.push(cb);
-        };
-        Physic.prototype.addBody = function (objects) {
-            var _this = this;
-            if (Array.isArray(objects)) {
-                objects.forEach(function (object) {
-                    _this.world.add(object);
-                });
-            }
-            else {
-                this.world.add(objects);
-            }
-        };
-        Physic.prototype.removeBody = function (object) {
-            this.world.remove(object);
-        };
-        Physic.prototype.getWorld = function () {
-            return this.world;
-        };
-        return Physic;
-    })();
-    PingPong.Physic = Physic;
-})(PingPong || (PingPong = {}));
-/// <reference path="../../../typings/physicsjs/physicsjs.d.ts"/>
-/// <reference path="../../core/resources/Share.ts"/>
-/// <reference path="./Config.ts"/>  
-/// <reference path="./Physic.ts"/>  
-var PingPong;
-(function (PingPong) {
-    var Share = Resource.Share;
-    var Ball = (function () {
-        function Ball(physic) {
-            this.active = false;
-            this.physic = physic;
-            this.onLost = null;
-            this.body = Physics.body('circle', {
-                radius: 25,
-                x: Share.get('width') / 2,
-                y: 210,
-                restitution: 1,
-                cof: 1,
-                mass: 1000,
-                angle: 0,
-                treatment: 'static'
-            });
-            this.idName = 'ball';
-            this.body.idName = this.idName;
-            var ballTexture = Share.get('resources')['youssy-ball'].texture;
-            this.body.view = Share.get('renderer').createDisplay('sprite', {
-                texture: ballTexture,
-                anchor: {
-                    x: 0.5,
-                    y: 0.5
-                }
-            });
-            this.physic.addEvents([
-                this.getPhysicsEvents()
-            ]);
-            this.stop();
-        }
-        Ball.prototype.update = function () {
-            if (this.active
-                && (this.body.state.pos.y < PingPong.Config.TOP_LIMIT
-                    || this.body.state.pos.y > Share.get('height'))) {
-                if (this.onLost) {
-                    this.onLost();
-                }
-            }
-        };
-        Ball.prototype.start = function () {
-            this.active = true;
-            // this.body.view.scale.set(1, 1);
-            this.body.treatment = 'dynamic';
-        };
-        Ball.prototype.stop = function () {
-            this.active = false;
-            // this.body.view.scale.set(1, 1);
-            this.body.treatment = 'static';
-            this.body.state.pos.x = Share.get('width') / 2;
-            this.body.state.pos.y = 210;
-            if (!this.staticAnim) {
-                this.staticAnim = new TimelineMax({ yoyo: true, repeat: -1 });
-                this.staticAnim.to(this.body.view.scale, 0.2, { x: 0.8, y: 0.9 });
-            }
-        };
-        Ball.prototype.onCollision = function (data) {
-            var self = this;
-            var colliders = data.collisions;
-            var isBumpAllowed = false;
-            for (var i in colliders) {
-                var collider = colliders[i], bodyA = collider.bodyA, bodyB = collider.bodyB, platformCollider = null, ballCollider = null;
-                if (bodyA.idName == self.idName) {
-                    ballCollider = bodyA;
-                    platformCollider = bodyB;
-                }
-                else if (bodyB.idName == self.idName) {
-                    ballCollider = bodyB;
-                    platformCollider = bodyA;
-                }
-                if (ballCollider
-                    && ballCollider.state.pos.y < platformCollider.state.pos.y) {
-                    isBumpAllowed = true;
-                    break;
-                }
-            }
-            if (isBumpAllowed) {
-                // Force vy to be exactly the same no matter what
-                var vxBall = this.body.state.vel.x;
-                this.body.state.vel.set(vxBall, PingPong.Config.JUMP_BY);
-                // this.nextLyric();
-                if (this.onBump) {
-                    this.onBump(this.body.state.pos);
-                }
-            }
-            if (platformCollider) {
-                platformCollider.platform.fall();
-            }
-        };
-        Ball.prototype.getPhysicsEvents = function () {
-            return {
-                'collisions:detected': this.onCollision.bind(this)
-            };
-        };
-        Ball.prototype.getBody = function () {
-            return this.body;
-        };
-        return Ball;
-    })();
-    PingPong.Ball = Ball;
-})(PingPong || (PingPong = {}));
-/// <reference path="../../core/resources/Share.ts"/>
-var PingPong;
-(function (PingPong) {
-    var Share = Resource.Share;
-    var Lyric = (function () {
-        function Lyric() {
-            var artistMap = Lyric.config[~~(Math.random() * Lyric.config.length)];
-            var songs = artistMap.songs;
-            this.song = songs[~~(Math.random() * songs.length)];
-            this.line = 0;
-        }
-        Lyric.prototype.next = function (position) {
-            var now = Date.now();
-            if (this.lastCollisionTime
-                && now - this.lastCollisionTime < 25) {
-                return;
-            }
-            this.lastCollisionTime = now;
-            if (!this.line || !this.song.lines[this.line]) {
-                this.line = 0;
-            }
-            var widthScene = Share.get('width');
-            var onomatope = this.song.lines[this.line];
-            var text = new PIXI.extras.BitmapText(onomatope, {
-                font: "30px OogieBoogie"
-            });
-            text.position.y = position.y - 30;
-            text.position.x = position.x + 30;
-            var xEnd = text.position.x + text.width;
-            if (xEnd > widthScene) {
-                var diff = xEnd - widthScene;
-                text.position.x -= diff + 40;
-                if (text.position.x < 0) {
-                    text.position.x = 20;
-                    text.scale.set(0.8, 0.8);
-                }
-                text.position.y += 40;
-            }
-            var stage = Share.get('stage');
-            stage.addChild(text);
-            TweenMax.to(text.position, 0.5, { y: '-=50', onComplete: function () {
-                    stage.removeChild(text);
-                } });
-            this.line++;
-        };
-        Lyric.config = [{
-                artist: 'youss',
-                songs: [{
-                        title: 'LE SCORE',
-                        lines: [
-                            "ne pas ceder",
-                            "ne pas ceder",
-                            "ne pas ceder",
-                            "ne pas ceder",
-                            "ne pas ceder",
-                            "ne pas ceder",
-                            "on s'en sort",
-                            "fais peter LE SCORE",
-                            "j'suis en plein essor",
-                            "on s'en sort",
-                            "fais peter LE SCORE",
-                            "on s'en sort",
-                            "fais peter LE SCORE",
-                            "fais peter LE SCORE",
-                            "on s'en sort",
-                            "j'fais peter LE SCORE",
-                            "peter LE SCORE",
-                            "on s'en sort",
-                            "j'suis en plein essor",
-                        ]
-                    }]
-            }];
-        return Lyric;
-    })();
-    PingPong.Lyric = Lyric;
-})(PingPong || (PingPong = {}));
 /// <reference path="../../core/popups/BasePopup.ts"/>
 /// <reference path="../../core/utils/Math2.ts"/>
 /// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
@@ -1111,6 +943,7 @@ var PingPong;
     var Platform = (function () {
         function Platform(from, to, type) {
             this.type = type;
+            this.onBallCollision = null;
             var deltaX = to.x - from.x;
             var deltaY = to.y - from.y;
             var w = Math.abs(deltaX);
@@ -1151,6 +984,12 @@ var PingPong;
         Platform.prototype.fall = function () {
             this.setType(1 /* FALL */);
         };
+        Platform.prototype.ballCollision = function () {
+            this.fall();
+            if (this.onBallCollision) {
+                this.onBallCollision();
+            }
+        };
         Platform.prototype.setType = function (type) {
             if (this.type == type) {
                 return;
@@ -1166,6 +1005,9 @@ var PingPong;
         };
         Platform.prototype.getBody = function () {
             return this.body;
+        };
+        Platform.prototype.isStatic = function () {
+            return (this.type == 0 /* STATIC */);
         };
         return Platform;
     })();
@@ -1217,11 +1059,13 @@ var PingPong;
             this.cleanBuildingPlatform();
             this.buildingPlatform = new PingPong.Platform(this.from, this.to, 0 /* STATIC */);
             this.physic.addBody(this.buildingPlatform.getBody());
+            this.buildingPlatform.onBallCollision = this.onRelease.bind(this);
         };
         PlatformManager.prototype.onRelease = function () {
             if (!this.from || !this.to) {
                 return;
             }
+            this.draging = false;
             this.cleanBuildingPlatform();
             this.disableStaticPlatform();
             var type = (this.nbPlatform) ? 1 /* FALL */ : 0 /* STATIC */;
@@ -1351,6 +1195,76 @@ var PingPong;
     })(Scene.BaseScene);
     PingPong.GameScene = GameScene;
 })(PingPong || (PingPong = {}));
+/// <reference path="./BaseScene.ts"/>
+var Scene;
+(function (Scene) {
+    var SplashScene = (function (_super) {
+        __extends(SplashScene, _super);
+        function SplashScene(color) {
+            _super.call(this, 'SplashScene');
+            this.color = color || 0x048cff;
+        }
+        SplashScene.prototype.create = function () {
+            var graph = new PIXI.Graphics();
+            graph.beginFill(this.color);
+            graph.drawRect(0, 0, this.Share.get('width'), this.Share.get('height'));
+            graph.endFill();
+            this.addChild(graph);
+            var logoTexture = this.Share.get('resources')['fantouch'].texture;
+            var logo = new PIXI.Sprite(logoTexture);
+            logo.scale.set(0.8, 0.8);
+            logo.anchor.set(0.5, 0.5);
+            logo.position.set(this.Share.get('width') / 2, this.Share.get('height') / 2);
+            this.addChild(logo);
+        };
+        SplashScene.prototype.logic = function () {
+            // setTimeout(() => {
+            //   this.close();  
+            // }, 3000)
+        };
+        SplashScene.prototype.start = function () {
+            this.startAt = Date.now();
+            _super.prototype.start.call(this);
+        };
+        SplashScene.prototype.close = function () {
+            var dt = Date.now() - this.startAt;
+            if (dt > SplashScene.MIN_DISPLAY) {
+                _super.prototype.close.call(this);
+            }
+            else {
+                setTimeout(this.close.bind(this), dt);
+            }
+        };
+        SplashScene.MIN_DISPLAY = 1000;
+        return SplashScene;
+    })(Scene.BaseScene);
+    Scene.SplashScene = SplashScene;
+})(Scene || (Scene = {}));
+/// <reference path="./LoaderController.ts"/>
+/// <reference path="./ILoadable.ts"/>
+/// <reference path="../resources/Share.ts"/>
+var Loader = (function () {
+    function Loader(controller) {
+        this.controller = controller;
+        this.assets = new Array();
+    }
+    Loader.prototype.add = function (asset) {
+        this.assets.push(asset);
+        this.controller.add(asset.getAlias(), asset.getPath());
+        return this;
+    };
+    Loader.prototype.load = function (cb) {
+        this.controller.load(function (loader, resources) {
+            var res = Resource.Share.get('resources') || {};
+            for (var key in resources) {
+                res[key] = resources[key];
+            }
+            Resource.Share.set('resources', res);
+            cb();
+        });
+    };
+    return Loader;
+})();
 /// <reference path="./loaders/Loader.ts"/>
 var BaseApp = (function () {
     function BaseApp() {
@@ -1371,6 +1285,79 @@ var BaseApp = (function () {
     };
     return BaseApp;
 })();
+/// <reference path="../loaders/ILoadable.ts"/>
+var Asset;
+(function (Asset) {
+    var BaseAsset = (function () {
+        function BaseAsset(alias, path, type) {
+            this.alias = alias;
+            this.path = path;
+            this.type = type;
+        }
+        BaseAsset.prototype.getAlias = function () {
+            return this.alias;
+        };
+        BaseAsset.prototype.getPath = function () {
+            return this.path;
+        };
+        BaseAsset.prototype.getType = function () {
+            return this.type;
+        };
+        BaseAsset.prototype.setPath = function (path) {
+            this.path = path;
+            return this;
+        };
+        BaseAsset.prototype.setAlias = function (alias) {
+            this.alias = alias;
+            return this;
+        };
+        return BaseAsset;
+    })();
+    Asset.BaseAsset = BaseAsset;
+})(Asset || (Asset = {}));
+var Asset;
+(function (Asset) {
+    ;
+})(Asset || (Asset = {}));
+/// <reference path="./BaseAsset.ts"/>
+/// <reference path="./Type.ts"/>
+var Asset;
+(function (Asset) {
+    var Font = (function (_super) {
+        __extends(Font, _super);
+        function Font(alias, path) {
+            _super.call(this, alias, path, 2 /* FONT */);
+        }
+        return Font;
+    })(Asset.BaseAsset);
+    Asset.Font = Font;
+})(Asset || (Asset = {}));
+/// <reference path="./BaseAsset.ts"/>
+/// <reference path="./Type.ts"/>
+var Asset;
+(function (Asset) {
+    var Image = (function (_super) {
+        __extends(Image, _super);
+        function Image(alias, path) {
+            _super.call(this, alias, path, 0 /* IMAGE */);
+        }
+        return Image;
+    })(Asset.BaseAsset);
+    Asset.Image = Image;
+})(Asset || (Asset = {}));
+/// <reference path="./BaseAsset.ts"/>
+/// <reference path="./Type.ts"/>
+var Asset;
+(function (Asset) {
+    var Sound = (function (_super) {
+        __extends(Sound, _super);
+        function Sound(alias, path) {
+            _super.call(this, alias, path, 1 /* SOUND */);
+        }
+        return Sound;
+    })(Asset.BaseAsset);
+    Asset.Sound = Sound;
+})(Asset || (Asset = {}));
 /// <reference path="./GameScene.ts"/>
 /// <reference path="./Physic.ts"/>
 /// <reference path="../../core/scenes/SplashScene.ts"/>
@@ -1421,6 +1408,32 @@ var PingPong;
     })(BaseApp);
     PingPong.App = App;
 })(PingPong || (PingPong = {}));
+var Util;
+(function (Util) {
+    var Color = (function () {
+        function Color() {
+        }
+        Color.componentToHex = function (c) {
+            var hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        };
+        Color.rgbToHax = function (rgb) {
+            var rgbList = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            return "0x" +
+                Color.componentToHex(parseInt(rgbList[1]))
+                + Color.componentToHex(parseInt(rgbList[2]))
+                + Color.componentToHex(parseInt(rgbList[3]));
+        };
+        Color.hexaToColor = function (hexa) {
+            return '#' + hexa.toString().slice(2);
+        };
+        Color.colorToHexa = function (color) {
+            return '0x' + color.toString().slice(1);
+        };
+        return Color;
+    })();
+    Util.Color = Color;
+})(Util || (Util = {}));
 /// <reference path="./core/assets/Font.ts"/>
 /// <reference path="./core/assets/Image.ts"/>
 /// <reference path="./core/assets/Sound.ts"/>

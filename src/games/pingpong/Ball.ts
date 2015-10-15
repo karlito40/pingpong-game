@@ -2,6 +2,7 @@
 /// <reference path="../../core/resources/Share.ts"/>
 /// <reference path="./Config.ts"/>  
 /// <reference path="./Physic.ts"/>  
+/// <reference path="../../../typings/greensock/greensock.d.ts"/>
 
 module PingPong {
   var Share = Resource.Share;
@@ -118,7 +119,6 @@ module PingPong {
         // Force vy to be exactly the same no matter what
         var vxBall = this.body.state.vel.x;
         this.body.state.vel.set(vxBall, Config.JUMP_BY);   
-        // this.nextLyric();
         
         if(this.onBump) {
           this.onBump(this.body.state.pos);
@@ -126,7 +126,8 @@ module PingPong {
       }
       
       if(platformCollider) {
-        platformCollider.platform.fall();
+        // platformCollider.platform.fall();
+        platformCollider.platform.ballCollision();
       }
     }
     

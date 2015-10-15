@@ -14,11 +14,12 @@ module PingPong {
     
     protected body;
     protected type: PLATFORM_TYPE;
+    onBallCollision: Function;
     
     constructor(from: IPoint, to: IPoint, type: PLATFORM_TYPE) {
-      
       this.type = type;
-      
+      this.onBallCollision = null;
+        
       var deltaX = to.x - from.x;
       var deltaY = to.y - from.y;
       var w = Math.abs(deltaX); 
@@ -69,6 +70,13 @@ module PingPong {
       this.setType(PLATFORM_TYPE.FALL);
     }
     
+    ballCollision(): void {
+      this.fall();
+      if(this.onBallCollision) {
+        this.onBallCollision();
+      }
+    }
+    
     setType(type: PLATFORM_TYPE): void {
       if(this.type == type) {
         return;
@@ -86,7 +94,11 @@ module PingPong {
     getBody(): any {
       return this.body;
     } 
-   
+    
+    isStatic(): boolean {
+      return (this.type == PLATFORM_TYPE.STATIC);
+    }
+    
   }
   
 }

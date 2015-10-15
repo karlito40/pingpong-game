@@ -28,10 +28,11 @@ module PingPong {
     
     protected record: number;
     protected nbGame: number;
+    protected score: number;
     
     protected bridgeWidth: number;
     
-    constructor() {
+    constructor(score?: number) {
       super();
       
       this.bridgeWidth = 150;
@@ -40,6 +41,7 @@ module PingPong {
       
       this.nbGame = Storage.get(Constant.NB_GAME) || 0;
       this.record = Storage.get(Constant.RECORD) || 0;
+      this.score = score || 0;
     }
         
     create(): void {
@@ -241,6 +243,13 @@ module PingPong {
       
       character.position.x = 10;
       character.position.y = Share.get('height');
+      
+      var recordText = new PIXI.extras.BitmapText(this.record.toString(), {
+        font: "25px OogieBoogie"
+      });
+      recordText.position.x = character.width/2 - recordText.width/2;
+      recordText.position.y = 35;
+      character.addChild(recordText);
     
       return character;
     } 
@@ -263,7 +272,11 @@ module PingPong {
       container.rotation = Util.Math2.degToRad(40);
       container.alpha = 0;
       
-      var s = 'Reach the sky';
+      var s = 'Fais peter le score !';
+      
+      if(this.score) {
+        s += '\n' + this.score + ' points ';
+      }
       
       var text = new PIXI.Text(s, {
         font: "17px Arial",
@@ -276,6 +289,10 @@ module PingPong {
       return container;
     
   
+    }
+    
+    setScore(score: number): void {
+      this.score = score;
     }
     
   }

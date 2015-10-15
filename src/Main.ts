@@ -6,6 +6,6 @@
 
 var app = new PingPong.App();
 app.getLoaderEntry()
-    .add(new Asset.Image('fantouch', 'images/fantouch.png'));
+    .add(new Asset.Image('fantouch', '/games/images/fantouch.png'));
     
 app.start();

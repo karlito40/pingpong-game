@@ -34,17 +34,17 @@ module PingPong {
       
         // Load the game asset
         this.loaderGame
-          .add(new Asset.Font('OogieBoogie', 'fonts/OogieBoogie/OogieBoogie.fnt'))
-          .add(new Asset.Font('OogieBoogieMin', 'fonts/OogieBoogie/OogieBoogieMin.fnt'))
-          .add(new Asset.Image('youssy-ball', 'images/youssy-ball.png'))
-          .add(new Asset.Image('bg-cloud', 'images/bg-cloud.png'))
-          .add(new Asset.Image('bg-record', 'images/bg-record.png'))
-          .add(new Asset.Image('bg-party', 'images/bg-party.png'))
-          .add(new Asset.Image('pencil', 'images/pencil.png'))
-          .add(new Asset.Image('line', 'images/line.png'))
-          .add(new Asset.Image('circle', 'images/circle.png'))
-          .add(new Asset.Image('youss', 'images/youss.png'))
-          .add(new Asset.Image('sep', 'images/sep.png'));
+          .add(new Asset.Font('OogieBoogie', '/games/fonts/OogieBoogie/OogieBoogie.fnt'))
+          .add(new Asset.Font('OogieBoogieMin', '/games/fonts/OogieBoogie/OogieBoogieMin.fnt'))
+          .add(new Asset.Image('youssy-ball', '/games/images/youssy-ball.png'))
+          .add(new Asset.Image('bg-cloud', '/games/images/bg-cloud.png'))
+          .add(new Asset.Image('bg-record', '/games/images/bg-record.png'))
+          .add(new Asset.Image('bg-party', '/games/images/bg-party.png'))
+          .add(new Asset.Image('pencil', '/games/images/pencil.png'))
+          .add(new Asset.Image('line', '/games/images/line.png'))
+          .add(new Asset.Image('circle', '/games/images/circle.png'))
+          .add(new Asset.Image('youss', '/games/images/youss.png'))
+          .add(new Asset.Image('sep', '/games/images/sep.png'));
         
         this.loaderGame.load(() => {
           console.log('loader game complete')

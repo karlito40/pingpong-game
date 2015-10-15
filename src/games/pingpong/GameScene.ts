@@ -103,7 +103,7 @@ module PingPong {
         Storage.set(Constant.RECORD, this.viewport.getScore());      
       }
       
-      this.starter = new StarterPopup();
+      this.starter = new StarterPopup(this.viewport.getScore());
       this.starter.open();
     }
      

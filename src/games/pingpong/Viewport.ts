@@ -98,7 +98,7 @@ module PingPong {
           this.recordSepContainer.position.y += Config.SCROLL_SPEED;
         }
         
-        var currentStep = Math.floor(this.altitude/Config.STEP_ALTITUDE);
+        var currentStep = Math.floor((this.altitude + Share.get('height'))/Config.STEP_ALTITUDE);
       
         if(this.record
           && this.altitude >= this.record 

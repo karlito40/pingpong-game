@@ -570,7 +570,7 @@ var PingPong;
                 if (this.recordSepContainer) {
                     this.recordSepContainer.position.y += PingPong.Config.SCROLL_SPEED;
                 }
-                var currentStep = Math.floor(this.altitude / PingPong.Config.STEP_ALTITUDE);
+                var currentStep = Math.floor((this.altitude + Share.get('height')) / PingPong.Config.STEP_ALTITUDE);
                 if (this.record
                     && this.altitude >= this.record
                     && !this.hasRecordDisplay

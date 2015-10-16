@@ -350,7 +350,7 @@ var Resource;
                 fill: 0xFFFFFF
             },
             // background: 0xfae337
-            background: 0x000000
+            background: 0x171715
         };
         return Style;
     })();
@@ -1426,7 +1426,7 @@ var PingPong;
         }
         GameScene.prototype.create = function () {
             var bg = new PIXI.Graphics();
-            bg.beginFill(0xfae337);
+            bg.beginFill(0x171715);
             bg.drawRect(0, 0, this.Share.get('width'), this.Share.get('height'));
             bg.endFill();
             this.addChild(bg);

@@ -11493,12 +11493,10 @@ Physics.renderer('pixi', function( parent ){
 
             isTransparent = (!this.options.styles.color || this.options.styles.color === 'transparent');
             // Hook in PIXI stage here
-            console.log('this.options.styles.color', this.options.styles.color)
             this.stage = new PIXI.Stage(this.options.styles.color);
 
             // Create empty meta object for use later
             this.meta = {};
-
             el = (this.el && this.el.nodeName === 'CANVAS') ? el : null;
             // add the renderer view element to the DOM according to its type
             this.renderer = new PIXI.autoDetectRenderer(this.options.width, this.options.height, {

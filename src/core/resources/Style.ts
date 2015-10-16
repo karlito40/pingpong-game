@@ -19,7 +19,7 @@ module Resource {
       },
     
       // background: 0xfae337
-      background: 0x000000
+      background: 0x171715
     };
     
     static get(key: string): any {

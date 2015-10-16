@@ -38,7 +38,7 @@ module PingPong {
     
     create(): void {
       var bg = new PIXI.Graphics();
-      bg.beginFill(0xfae337);
+      bg.beginFill(0x171715);
       bg.drawRect(0, 0, this.Share.get('width'), this.Share.get('height'));
       bg.endFill();
       

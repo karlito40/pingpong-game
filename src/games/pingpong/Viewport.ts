@@ -25,6 +25,8 @@ module PingPong {
     protected hasRecordDisplay: boolean; 
     protected steps: {}; 
     
+    onStep: Function;
+    
     constructor() {
       super();
       
@@ -129,8 +131,12 @@ module PingPong {
         if(!this.steps[currentStep]) {
           
           this.steps[currentStep] = true;
+          if(this.onStep) {
+            this.onStep(currentStep);
+          }
           
           if(currentStep > 0) {
+           
             var stage = Share.get('stage');
             var sepTexture = Share.get('resources').sep.texture;
             

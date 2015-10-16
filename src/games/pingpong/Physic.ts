@@ -12,6 +12,8 @@ module PingPong {
     protected world: PhysicsWorld;
     protected renderer: PixiRenderer;
     protected updates: Function[];
+    protected gravity: PhysicsBehavior;
+    private currentGravity: number;
     
     constructor() {
       this.updates = [];
@@ -39,13 +41,14 @@ module PingPong {
       Share.set('renderer', this.renderer);
       Share.set('stage', this.renderer.stage);
       
-      var gravity = Physics.behavior('constant-acceleration', {
-        acc: { x : 0, y: Config.GRAVITY } 
+      this.currentGravity = Config.GRAVITY_MIN;
+      this.gravity = Physics.behavior('constant-acceleration', {
+        acc: { x : 0, y: this.currentGravity} 
       });
 
       this.world.add([
         this.renderer,
-        gravity,
+        this.gravity,
         Physics.behavior('body-impulse-response'), // TODO: Test perf without this
         Physics.behavior('body-collision-detection'),
         Physics.behavior('sweep-prune'),
@@ -68,6 +71,20 @@ module PingPong {
       
       this.garbage();
     }
+    
+    incrGravity(): void {
+      if(this.currentGravity < Config.GRAVITY_MAX) {
+        this.currentGravity += 0.0002;
+        this.gravity.setAcceleration({ x : 0, y: this.currentGravity});
+      }
+      
+    }
+    
+    reset(): void {
+      this.currentGravity = Config.GRAVITY_MIN;
+      this.gravity.setAcceleration({ x : 0, y: this.currentGravity});
+    }
+    
     
     addEvents(events: any) {
       events.forEach((event) => {

@@ -7,11 +7,13 @@
 /// <reference path="./PlatformManager.ts"/>
 /// <reference path="../../core/scenes/BaseScene.ts"/>
 /// <reference path="../../core/resources/Style.ts"/>
+/// <reference path="../../core/resources/Share.ts"/>
 /// <reference path="../../core/resources/Storage.ts"/>
 
 module PingPong {
   
   var Storage = Resource.Storage;
+  var Share = Resource.Share;
   
   export class GameScene extends Scene.BaseScene {
     
@@ -64,6 +66,12 @@ module PingPong {
       
       this.starter = new StarterPopup();
       this.starter.open();
+      
+      this.viewport.onStep = (step) => {
+        if(step > 0) {
+          this.physic.incrGravity();  
+        }
+      };
 
       this.physic.addUpdate(() => {
         this.viewport.update();
@@ -75,6 +83,7 @@ module PingPong {
       if(this.gameActive) {
         return;
       }
+              
       this.gameActive = true;
       
       this.lyric = new Lyric();
@@ -89,6 +98,8 @@ module PingPong {
       if(!this.gameActive) {
         return;
       }
+      
+      this.physic.reset();
       
       this.gameActive = false;
       

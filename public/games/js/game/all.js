@@ -31,7 +31,9 @@ var PingPong;
         Config.RAINBOW_STEP = 10;
         Config.ALPHA_TUTO = 0.25;
         Config.TRAIL_PARTICLE_DELAY = 70;
-        Config.GRAVITY = 0.002;
+        // static GRAVITY = 0.002;
+        Config.GRAVITY_MIN = 0.0015;
+        Config.GRAVITY_MAX = 0.002;
         Config.JUMP_BY = -0.7;
         Config.GARBAGE_DELAY = 2000;
         Config.STEP_ALTITUDE = 1000;
@@ -150,7 +152,6 @@ var PingPong;
             this.bg = new PIXI.extras.TilingSprite(cloudTexture, 1192, 800);
             this.addChild(this.bg);
             // Altitude Bitmap
-            // this.altitudeText = new PIXI.extras.BitmapText('', {font: "30px OogieBoogie"});
             this.altitudeText = new PIXI.Text('', {
                 font: "18px Gobold",
                 fill: 0xFFFFFF
@@ -180,7 +181,6 @@ var PingPong;
                     sep.tint = 0xab8951;
                     var stepText = new PIXI.Text('RECORD', {
                         font: "30px Gobold",
-                        // tint: 0xee1198
                         fill: 0xab8951
                     });
                     stepText.position.set(10, 10);
@@ -192,6 +192,9 @@ var PingPong;
                 // Well it's bad sorry
                 if (!this.steps[currentStep]) {
                     this.steps[currentStep] = true;
+                    if (this.onStep) {
+                        this.onStep(currentStep);
+                    }
                     if (currentStep > 0) {
                         var stage = Share.get('stage');
                         var sepTexture = Share.get('resources').sep.texture;
@@ -200,14 +203,8 @@ var PingPong;
                         }
                         this.sepContainer = new PIXI.Container();
                         this.sepContainer.alpha = 0.3;
-                        // this.sepContainer.alpha = 0.1;
                         var sep = new PIXI.extras.TilingSprite(sepTexture, this.width, 9);
-                        // sep.tint = 0xFFFFFF;
                         var stepInd = currentStep * PingPong.Config.STEP_ALTITUDE;
-                        // var stepText = new PIXI.extras.BitmapText(stepInd + ' m', {
-                        //   font: "30px OogieBoogie",
-                        //   tint: 0x000000
-                        // });
                         var stepText = new PIXI.Text(stepInd + ' m', {
                             font: "30px Gobold",
                             fill: 0xFFFFFF
@@ -297,12 +294,13 @@ var PingPong;
             Share.set('height', this.renderer.height);
             Share.set('renderer', this.renderer);
             Share.set('stage', this.renderer.stage);
-            var gravity = Physics.behavior('constant-acceleration', {
-                acc: { x: 0, y: PingPong.Config.GRAVITY }
+            this.currentGravity = PingPong.Config.GRAVITY_MIN;
+            this.gravity = Physics.behavior('constant-acceleration', {
+                acc: { x: 0, y: this.currentGravity }
             });
             this.world.add([
                 this.renderer,
-                gravity,
+                this.gravity,
                 Physics.behavior('body-impulse-response'),
                 Physics.behavior('body-collision-detection'),
                 Physics.behavior('sweep-prune'),
@@ -320,6 +318,16 @@ var PingPong;
                 });
             });
             this.garbage();
+        };
+        Physic.prototype.incrGravity = function () {
+            if (this.currentGravity < PingPong.Config.GRAVITY_MAX) {
+                this.currentGravity += 0.0002;
+                this.gravity.setAcceleration({ x: 0, y: this.currentGravity });
+            }
+        };
+        Physic.prototype.reset = function () {
+            this.currentGravity = PingPong.Config.GRAVITY_MIN;
+            this.gravity.setAcceleration({ x: 0, y: this.currentGravity });
         };
         Physic.prototype.addEvents = function (events) {
             var _this = this;
@@ -500,9 +508,6 @@ var PingPong;
             }
             var widthScene = Share.get('width');
             var onomatope = this.song.lines[this.line];
-            // var text = new PIXI.extras.BitmapText(onomatope, {
-            //   font: "30px OogieBoogie"
-            // });
             var text = new PIXI.Text(onomatope, {
                 font: "20px Gobold",
                 fill: 0xFFFFFF
@@ -763,8 +768,6 @@ var PingPong;
             this.addChild(this.recordContainer);
             this.scoreContainer = this.buildScore();
             this.addChild(this.scoreContainer);
-            // this.nbGameContainer = this.buildNbGame();  
-            // this.addChild(this.nbGameContainer);
             this.platformerContainer = this.buildPlatformer();
             this.addChild(this.platformerContainer);
             this.pencil = this.buildPencil(this.platformerContainer.position);
@@ -804,7 +807,6 @@ var PingPong;
             this.tlTuto = new TimelineMax();
             this.tlTuto.to(this.character.position, 0.2, { y: '-=' + (this.character.height - 10) });
             this.tlTuto.to(this.dialogueContainer, 0.1, { alpha: 1 }, '-=0.1');
-            // this.tlTuto.to(this.dialogueContainer.position, 0.2, {y: '-=50'}, '-=0.15');
             this.tlTuto.to(this.dialogueContainer, 1, { rotation: 0, ease: Elastic.easeOut }, '-=0.2');
             var bridgeDuration = 0.7;
             var pencilDestX = this.bridgeWidth + this.pencil.width / 2 + 13;
@@ -819,20 +821,17 @@ var PingPong;
          */
         StarterPopup.prototype.buildLogo = function () {
             var container = new PIXI.Container();
-            // var youssyText = new PIXI.extras.BitmapText("Youssy", {font: "60px OogieBoogie"});
             var youssyText = new PIXI.Text("Youssy", {
                 font: "45px Gobold",
                 fill: 0xab8951
             });
             youssyText.position.x = Share.get('width') / 2 - youssyText.width / 2;
-            // var ballText = new PIXI.extras.BitmapText("Ball", {font: "60px OogieBoogie"});
             var ballText = new PIXI.Text("Ball", {
                 font: "45px Gobold",
                 fill: 0xab8951
             });
             Share.set('ballText', ballText);
             ballText.position.x = Share.get('width') / 2 - ballText.width / 2 + 30;
-            // ballText.position.y = 45;
             ballText.position.y = 39;
             container.addChild(youssyText);
             container.addChild(ballText);
@@ -947,8 +946,6 @@ var PingPong;
             dialWidth = Math.min(dialWidth, 300);
             var dialHeight = 100;
             var container = new PIXI.Graphics();
-            // container.beginFill(0xFFFFFF);
-            // container.beginFill(0x3c3c3b);
             container.beginFill(0x171715);
             container.lineStyle(3, 0x3c3c3b, 1);
             container.drawRoundedRect(0, 0, dialWidth, dialHeight, 5);
@@ -1170,10 +1167,12 @@ var PingPong;
 /// <reference path="./PlatformManager.ts"/>
 /// <reference path="../../core/scenes/BaseScene.ts"/>
 /// <reference path="../../core/resources/Style.ts"/>
+/// <reference path="../../core/resources/Share.ts"/>
 /// <reference path="../../core/resources/Storage.ts"/>
 var PingPong;
 (function (PingPong) {
     var Storage = Resource.Storage;
+    var Share = Resource.Share;
     var GameScene = (function (_super) {
         __extends(GameScene, _super);
         function GameScene(physic) {
@@ -1207,6 +1206,11 @@ var PingPong;
             this.platformManager.onBuild = this.startGame.bind(this);
             this.starter = new PingPong.StarterPopup();
             this.starter.open();
+            this.viewport.onStep = function (step) {
+                if (step > 0) {
+                    _this.physic.incrGravity();
+                }
+            };
             this.physic.addUpdate(function () {
                 _this.viewport.update();
                 _this.ball.update();
@@ -1227,6 +1231,7 @@ var PingPong;
             if (!this.gameActive) {
                 return;
             }
+            this.physic.reset();
             this.gameActive = false;
             this.platformManager.stop();
             this.ball.stop();

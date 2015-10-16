@@ -65,6 +65,7 @@ interface PixiRenderer extends PhysicsRenderer {
 
 interface PhysicsBehavior {
   applyTo(object: any): any;
+  setAcceleration(vec: any): void;
 }
 
 interface PhysicsUtil {

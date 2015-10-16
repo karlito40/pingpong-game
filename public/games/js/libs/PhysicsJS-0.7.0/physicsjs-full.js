@@ -400,7 +400,6 @@ Physics.util = {};
 
         // start looping
         while ( ++iterations ) {
-
             // swap last and lastlast, to save on memory/speed
             last.swap(lastlast);
             // push a new point to the simplex because we haven't terminated yet
@@ -434,7 +433,6 @@ Physics.util = {};
 
             // if it's a line...
             if ( simplexLen === 2 ){
-
                 // otherwise we need to determine if the origin is in
                 // the current simplex and act accordingly
 
@@ -7243,7 +7241,7 @@ Physics.behavior('body-collision-detection', function( parent ){
      * Use GJK algorithm to check arbitrary bodies for collisions
      */
     var checkGJK = function checkGJK( bodyA, bodyB ){
-
+        
         var scratch = Physics.scratchpad()
             ,d = scratch.vector()
             ,tmp = scratch.vector()
@@ -7269,7 +7267,7 @@ Physics.behavior('body-collision-detection', function( parent ){
         result = Physics.gjk(support, d, true);
 
         if ( result.overlap ){
-
+            
             // there is a collision. let's do more work.
             collision = {
                 bodyA: bodyA,
@@ -7277,7 +7275,9 @@ Physics.behavior('body-collision-detection', function( parent ){
             };
 
             // inc by 1% of the smallest dim.
-            inc = 1e-2 * Math.min(dimA || 1, dimB || 1);
+            // inc = 1e-2 * Math.min(dimA || 1, dimB || 1);
+            // inc = 80e-2 * Math.min(dimA || 1, dimB || 1);       // To remove the while loop (to costly on mobile)
+            inc = Math.min(dimA || 1, dimB || 1);       // To remove the while loop (to costly on mobile)
 
             // first get the min distance of between core objects
             support.useCore = true;
@@ -7287,7 +7287,9 @@ Physics.behavior('body-collision-detection', function( parent ){
             // while there's still an overlap (or we don't have a positive distance)
             // and the support margins aren't bigger than the shapes...
             // search for the distance data
-            while ( (result.overlap || result.distance === 0) && (support.marginA < dimA || support.marginB < dimB) ){
+            
+            
+            // while ( (result.overlap || result.distance === 0) && (support.marginA < dimA || support.marginB < dimB) ){
                 if ( support.marginA < dimA ){
                     support.marginA += inc;
                 }
@@ -7296,7 +7298,7 @@ Physics.behavior('body-collision-detection', function( parent ){
                 }
 
                 result = Physics.gjk(support, d);
-            }
+            // }
 
             if ( result.overlap || result.maxIterationsReached ){
                 // This implementation can't deal with a core overlap yet

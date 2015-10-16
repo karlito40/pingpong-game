@@ -2,8 +2,12 @@
 /// <reference path="./IPoint.ts"/>
 /// <reference path="./Physic.ts"/>
 /// <reference path="./EPlatform.ts"/>
+/// <reference path="./TemporaryPlatform.ts"/>
+/// <reference path="../../core/resources/Share.ts"/>
 
 module PingPong {
+  
+  var Share = Resource.Share;
   
   export class PlatformManager {
     
@@ -13,7 +17,8 @@ module PingPong {
     
     protected from: IPoint;
     protected to: IPoint;
-    protected buildingPlatform: Platform;
+    protected buildingPlatform: TemporaryPlatform;
+    // protected buildingPlatform: Platform;
     protected staticPlatforms: Array<Platform>;
     protected physic: Physic;
     
@@ -59,19 +64,23 @@ module PingPong {
         return;
       }
       
-      var now = Date.now();
-      if(now - this.lastMove < 15) {
-        return;
-      }
-      this.lastMove = now;
+      // var now = Date.now();
+      // if(now - this.lastMove < 15) {
+      //   return;
+      // }
+      // this.lastMove = now;
       
-      // Well that sucks
+      // // Well that sucks
+      // this.cleanBuildingPlatform();
+      
+      // this.buildingPlatform = new Platform(this.from, this.to, PLATFORM_TYPE.STATIC);
+      // this.physic.addBody(this.buildingPlatform.getBody());
+      
+      // this.buildingPlatform.onBallCollision = this.onRelease.bind(this);   
+        
       this.cleanBuildingPlatform();
-      
-      this.buildingPlatform = new Platform(this.from, this.to, PLATFORM_TYPE.STATIC);
-      this.physic.addBody(this.buildingPlatform.getBody());
-      
-      this.buildingPlatform.onBallCollision = this.onRelease.bind(this);     
+      this.buildingPlatform = new TemporaryPlatform(this.from, this.to);
+      Share.get('stage').addChild(this.buildingPlatform);
     }
     
     onRelease(): void {
@@ -131,7 +140,8 @@ module PingPong {
     
     private cleanBuildingPlatform(): void {
       if(this.buildingPlatform) {
-        this.physic.removeBody(this.buildingPlatform.getBody());  
+        // this.physic.removeBody(this.buildingPlatform.getBody());  
+        Share.get('stage').removeChild(this.buildingPlatform);
         this.buildingPlatform = null;
       }
     }

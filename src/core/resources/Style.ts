@@ -9,7 +9,7 @@ module Resource {
       },
     
       line: {
-        strokeStyle: 0x3e5060,
+        strokeStyle: 0xab8951,
         lineWidth: 4
       },
       

@@ -31,7 +31,6 @@ var PingPong;
         Config.RAINBOW_STEP = 10;
         Config.ALPHA_TUTO = 0.25;
         Config.TRAIL_PARTICLE_DELAY = 70;
-        // static GRAVITY = 0.002;
         Config.GRAVITY_MIN = 0.0015;
         Config.GRAVITY_MAX = 0.002;
         Config.JUMP_BY = -0.7;
@@ -250,7 +249,7 @@ var Resource;
                 fillStyle: 'transparent'
             },
             line: {
-                strokeStyle: 0x3e5060,
+                strokeStyle: 0xab8951,
                 lineWidth: 4
             },
             font: {
@@ -679,7 +678,8 @@ var Popup;
         __extends(BasePopup, _super);
         function BasePopup() {
             _super.call(this);
-            this.filterAlpha = 0.3;
+            // this.filterAlpha = 0.3;
+            this.filterAlpha = 0;
             this.openState = false;
             this.onClose = null;
         }
@@ -1058,12 +1058,44 @@ var PingPong;
     })();
     PingPong.Platform = Platform;
 })(PingPong || (PingPong = {}));
+/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
+/// <reference path="./IPoint.ts"/>
+/// <reference path="./Config.ts"/>
+/// <reference path="../../core/resources/Share.ts"/>
+/// <reference path="../../core/resources/Style.ts"/>
+var PingPong;
+(function (PingPong) {
+    var Share = Resource.Share;
+    var Style = Resource.Style;
+    var TemporaryPlatform = (function (_super) {
+        __extends(TemporaryPlatform, _super);
+        function TemporaryPlatform(from, to) {
+            _super.call(this);
+            var circleTexture = Share.get('resources').circle.texture;
+            var p1 = new PIXI.Sprite(circleTexture);
+            p1.anchor.set(0.5, 0.5);
+            p1.position.set(from.x, from.y);
+            var p2 = new PIXI.Sprite(circleTexture);
+            p2.anchor.set(0.5, 0.5);
+            p2.position.set(to.x, to.y);
+            var lineMaker = Share.get('renderer').createLine(from, to, Style.get('line'));
+            this.addChild(lineMaker);
+            this.addChild(p1);
+            this.addChild(p2);
+        }
+        return TemporaryPlatform;
+    })(PIXI.Container);
+    PingPong.TemporaryPlatform = TemporaryPlatform;
+})(PingPong || (PingPong = {}));
 /// <reference path="./Platform.ts"/>
 /// <reference path="./IPoint.ts"/>
 /// <reference path="./Physic.ts"/>
 /// <reference path="./EPlatform.ts"/>
+/// <reference path="./TemporaryPlatform.ts"/>
+/// <reference path="../../core/resources/Share.ts"/>
 var PingPong;
 (function (PingPong) {
+    var Share = Resource.Share;
     var PlatformManager = (function () {
         function PlatformManager(physic) {
             this.active = false;
@@ -1095,16 +1127,19 @@ var PingPong;
             if (!this.from || !this.to) {
                 return;
             }
-            var now = Date.now();
-            if (now - this.lastMove < 15) {
-                return;
-            }
-            this.lastMove = now;
-            // Well that sucks
+            // var now = Date.now();
+            // if(now - this.lastMove < 15) {
+            //   return;
+            // }
+            // this.lastMove = now;
+            // // Well that sucks
+            // this.cleanBuildingPlatform();
+            // this.buildingPlatform = new Platform(this.from, this.to, PLATFORM_TYPE.STATIC);
+            // this.physic.addBody(this.buildingPlatform.getBody());
+            // this.buildingPlatform.onBallCollision = this.onRelease.bind(this);   
             this.cleanBuildingPlatform();
-            this.buildingPlatform = new PingPong.Platform(this.from, this.to, 0 /* STATIC */);
-            this.physic.addBody(this.buildingPlatform.getBody());
-            this.buildingPlatform.onBallCollision = this.onRelease.bind(this);
+            this.buildingPlatform = new PingPong.TemporaryPlatform(this.from, this.to);
+            Share.get('stage').addChild(this.buildingPlatform);
         };
         PlatformManager.prototype.onRelease = function () {
             if (!this.from || !this.to) {
@@ -1150,7 +1185,8 @@ var PingPong;
         };
         PlatformManager.prototype.cleanBuildingPlatform = function () {
             if (this.buildingPlatform) {
-                this.physic.removeBody(this.buildingPlatform.getBody());
+                // this.physic.removeBody(this.buildingPlatform.getBody());  
+                Share.get('stage').removeChild(this.buildingPlatform);
                 this.buildingPlatform = null;
             }
         };

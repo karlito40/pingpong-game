@@ -12,11 +12,13 @@ module PingPong {
   
   export class Platform {
     
+    protected speed: number;
     protected body;
     protected type: PLATFORM_TYPE;
     onBallCollision: Function;
     
-    constructor(from: IPoint, to: IPoint, type: PLATFORM_TYPE) {
+    constructor(from: IPoint, to: IPoint, type: PLATFORM_TYPE, speed: number) {
+      this.speed = speed;
       this.type = type;
       this.onBallCollision = null;
         
@@ -33,7 +35,8 @@ module PingPong {
         height: HEIGHT,
         x: from.x,
         y: from.y,
-        vy: (this.type) ? Config.PLATFORM_SPEED : 0,
+        // vy: (this.type) ? Config.PLATFORM_SPEED_MIN : 0,
+        vy: (this.type == PLATFORM_TYPE.FALL) ? this.speed : 0,
         cof: 1,
         restitution: 1,
         angle: angle,
@@ -85,7 +88,8 @@ module PingPong {
       this.type = type;
       if(this.type == PLATFORM_TYPE.FALL) {
         this.body.sleep(false)  
-        this.body.state.vel.y = Config.PLATFORM_SPEED;
+        // this.body.state.vel.y = Config.PLATFORM_SPEED;
+        this.body.state.vel.y = this.speed;
       } else {
         throw new Error('setType static not implemented yet');
       }

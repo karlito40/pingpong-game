@@ -7276,8 +7276,9 @@ Physics.behavior('body-collision-detection', function( parent ){
 
             // inc by 1% of the smallest dim.
             // inc = 1e-2 * Math.min(dimA || 1, dimB || 1);
+            inc = 50e-2 * Math.min(dimA || 1, dimB || 1);
             // inc = 80e-2 * Math.min(dimA || 1, dimB || 1);       // To remove the while loop (to costly on mobile)
-            inc = Math.min(dimA || 1, dimB || 1);       // To remove the while loop (to costly on mobile)
+            // inc = Math.min(dimA || 1, dimB || 1);       // To remove the while loop (to costly on mobile)
 
             // first get the min distance of between core objects
             support.useCore = true;
@@ -7289,7 +7290,7 @@ Physics.behavior('body-collision-detection', function( parent ){
             // search for the distance data
             
             
-            // while ( (result.overlap || result.distance === 0) && (support.marginA < dimA || support.marginB < dimB) ){
+            while ( (result.overlap || result.distance === 0) && (support.marginA < dimA || support.marginB < dimB) ){
                 if ( support.marginA < dimA ){
                     support.marginA += inc;
                 }
@@ -7298,7 +7299,7 @@ Physics.behavior('body-collision-detection', function( parent ){
                 }
 
                 result = Physics.gjk(support, d);
-            // }
+            }
 
             if ( result.overlap || result.maxIterationsReached ){
                 // This implementation can't deal with a core overlap yet

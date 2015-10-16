@@ -122,19 +122,23 @@ module PingPong {
     private buildLogo(): PIXI.Container {
       var container = new PIXI.Container();
       
-      var youssyText = new PIXI.Text("Youssy", {
-        font: "45px Gobold",
+      // var youssyText = new PIXI.Text("Youssy", {
+      var youssyText = new PIXI.Text("Le", {
+        font: "35px Gobold",
         fill: 0xab8951
       });
       youssyText.position.x = Share.get('width')/2 - youssyText.width/2;
+      // youssyText.position.x = Share.get('width')/2 - youssyText.width - 25;
       
-      var ballText = new PIXI.Text("Ball", {
+      // var ballText = new PIXI.Text("Ball", {
+      var ballText = new PIXI.Text("Score", {
         font: "45px Gobold",
         fill: 0xab8951
       });
-      Share.set('ballText', ballText);
-      ballText.position.x = Share.get('width')/2 - ballText.width/2 + 30;
-      ballText.position.y = 39;
+      // ballText.position.x = Share.get('width')/2 - ballText.width/2 + 30;
+      ballText.position.x = Share.get('width')/2 - ballText.width/2;
+      // ballText.position.y = 39;
+      ballText.position.y = 30;
       
       container.addChild(youssyText);
       container.addChild(ballText);

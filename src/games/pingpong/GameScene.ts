@@ -69,7 +69,8 @@ module PingPong {
       
       this.viewport.onStep = (step) => {
         if(step > 0) {
-          this.physic.incrGravity();  
+          // this.physic.incrGravity();
+          this.platformManager.incrPlatformSpeed();  
         }
       };
 

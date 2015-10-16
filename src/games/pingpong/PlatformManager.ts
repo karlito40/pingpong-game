@@ -23,10 +23,12 @@ module PingPong {
     protected physic: Physic;
     
     protected lastMove: number;
+    protected platformSpeed: number;
     
     onBuild: Function;
     
     constructor(physic: Physic) {
+      
       this.active = false;
       this.physic = physic;
       this.draging = false;
@@ -38,6 +40,7 @@ module PingPong {
       this.lastMove = 0;
             
       this.nbPlatform = 0;
+      this.platformSpeed = Config.PLATFORM_SPEED_MIN;
       
       this.physic.addEvents([
         this.getPhysicsEvents()
@@ -51,6 +54,7 @@ module PingPong {
     stop(): void {
       this.active = false;
       this.nbPlatform = 0;
+      this.platformSpeed = Config.PLATFORM_SPEED_MIN;
       
     }
     
@@ -94,7 +98,7 @@ module PingPong {
       
       var type = (this.nbPlatform) ? PLATFORM_TYPE.FALL : PLATFORM_TYPE.STATIC;
       
-      var finalPlatform = new Platform(this.from, this.to, type);
+      var finalPlatform = new Platform(this.from, this.to, type, this.platformSpeed);
       this.physic.addBody(finalPlatform.getBody());
       
       if(type == PLATFORM_TYPE.STATIC) {
@@ -136,6 +140,10 @@ module PingPong {
     
     getNbPlatform(): number {
       return this.nbPlatform;
+    }
+    
+    incrPlatformSpeed(): void {
+      this.platformSpeed = Math.min(this.platformSpeed+0.05, Config.PLATFORM_SPEED_MAX);
     }
     
     private cleanBuildingPlatform(): void {

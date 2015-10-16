@@ -8,7 +8,7 @@ module PingPong {
     static RAINBOW_STEP = 10;
     static ALPHA_TUTO = 0.25;
     static TRAIL_PARTICLE_DELAY = 70;
-    static GRAVITY_MIN = 0.0015;
+    static GRAVITY_MIN = 0.002;
     static GRAVITY_MAX = 0.002;
     static JUMP_BY = -0.7;
     static GARBAGE_DELAY = 2000;
@@ -18,7 +18,9 @@ module PingPong {
     static PLATFORM_TUTO = 'tuto';
     
     static SCROLL_SPEED = 5;
-    static PLATFORM_SPEED = 0.5;
+    // static PLATFORM_SPEED = 0.5;
+    static PLATFORM_SPEED_MIN = 0.2;
+    static PLATFORM_SPEED_MAX = 0.5;
   }
   
 }

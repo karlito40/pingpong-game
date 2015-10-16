@@ -82,6 +82,7 @@ module PingPong {
       
       this.body.state.pos.x = Share.get('width')/2;
       this.body.state.pos.y = 210;
+      this.body.state.angular.pos = 0;
       
       if(!this.staticAnim) {
         this.staticAnim = new TimelineMax({yoyo: true, repeat: -1});

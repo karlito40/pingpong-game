@@ -9,6 +9,8 @@
 /// <reference path="../../core/resources/Style.ts"/>
 /// <reference path="../../core/resources/Share.ts"/>
 /// <reference path="../../core/resources/Storage.ts"/>
+/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
+/// <reference path="../../../typings/buzz/buzz.d.ts"/>
 
 module PingPong {
   
@@ -26,6 +28,8 @@ module PingPong {
     protected lyric: Lyric;
     protected nbGame: number;
     protected record: number;
+    protected sound: Sound;
+    protected stars: any;
     
     constructor(physic: Physic) {
       super('GameScene');  
@@ -50,6 +54,16 @@ module PingPong {
     
     logic(): void {
       
+      this.sound = new buzz.sound('/games/sounds/le_score.mp3', {
+        loop: true
+      });
+      this.stars = [
+        new buzz.sound('/games/sounds/etoile_1.mp3'),
+        new buzz.sound('/games/sounds/etoile_2.mp3'),
+        new buzz.sound('/games/sounds/etoile_3.mp3'),
+      ];
+      
+      
       // The ball cannot be add on create
       // as a stage.addChild will be done on this.physic.addBody
       // Conclusion: the background will hide the background.       
@@ -57,6 +71,9 @@ module PingPong {
       this.ball.onLost = this.endGame.bind(this);
       this.ball.onBump = (pos) => {
         this.lyric.next(pos);
+        var r = Math.floor(Math.random()*this.stars.length);
+        this.stars[r].stop();
+        this.stars[r].play();
       };
       
       this.physic.addBody(this.ball.getBody());
@@ -69,7 +86,6 @@ module PingPong {
       
       this.viewport.onStep = (step) => {
         if(step > 0) {
-          // this.physic.incrGravity();
           this.platformManager.incrPlatformSpeed();  
         }
       };
@@ -84,7 +100,11 @@ module PingPong {
       if(this.gameActive) {
         return;
       }
-              
+      
+      // this.sound.stop();
+      this.sound.play();
+      // this.sound.fadeIn(2000);
+             
       this.gameActive = true;
       
       this.lyric = new Lyric();
@@ -99,6 +119,8 @@ module PingPong {
       if(!this.gameActive) {
         return;
       }
+      
+      // this.sound.fadeOut(500);
       
       this.physic.reset();
       

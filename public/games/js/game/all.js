@@ -1411,6 +1411,8 @@ var PingPong;
 /// <reference path="../../core/resources/Style.ts"/>
 /// <reference path="../../core/resources/Share.ts"/>
 /// <reference path="../../core/resources/Storage.ts"/>
+/// <reference path="../../../typings/pixi.js/pixi.js.d.ts"/>
+/// <reference path="../../../typings/buzz/buzz.d.ts"/>
 var PingPong;
 (function (PingPong) {
     var Storage = Resource.Storage;
@@ -1435,6 +1437,14 @@ var PingPong;
         };
         GameScene.prototype.logic = function () {
             var _this = this;
+            this.sound = new buzz.sound('/games/sounds/le_score.mp3', {
+                loop: true
+            });
+            this.stars = [
+                new buzz.sound('/games/sounds/etoile_1.mp3'),
+                new buzz.sound('/games/sounds/etoile_2.mp3'),
+                new buzz.sound('/games/sounds/etoile_3.mp3'),
+            ];
             // The ball cannot be add on create
             // as a stage.addChild will be done on this.physic.addBody
             // Conclusion: the background will hide the background.       
@@ -1442,6 +1452,9 @@ var PingPong;
             this.ball.onLost = this.endGame.bind(this);
             this.ball.onBump = function (pos) {
                 _this.lyric.next(pos);
+                var r = Math.floor(Math.random() * _this.stars.length);
+                _this.stars[r].stop();
+                _this.stars[r].play();
             };
             this.physic.addBody(this.ball.getBody());
             this.platformManager = new PingPong.PlatformManager(this.physic);
@@ -1450,7 +1463,6 @@ var PingPong;
             this.starter.open();
             this.viewport.onStep = function (step) {
                 if (step > 0) {
-                    // this.physic.incrGravity();
                     _this.platformManager.incrPlatformSpeed();
                 }
             };
@@ -1463,6 +1475,9 @@ var PingPong;
             if (this.gameActive) {
                 return;
             }
+            // this.sound.stop();
+            this.sound.play();
+            // this.sound.fadeIn(2000);
             this.gameActive = true;
             this.lyric = new PingPong.Lyric();
             this.platformManager.start();
@@ -1474,6 +1489,7 @@ var PingPong;
             if (!this.gameActive) {
                 return;
             }
+            // this.sound.fadeOut(500);
             this.physic.reset();
             this.gameActive = false;
             this.platformManager.stop();

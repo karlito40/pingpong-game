@@ -57,11 +57,11 @@ module PingPong {
       this.sound = new buzz.sound('/games/sounds/le_score.mp3', {
         loop: true
       });
-      this.stars = [
-        new buzz.sound('/games/sounds/etoile_1.mp3'),
-        new buzz.sound('/games/sounds/etoile_2.mp3'),
-        new buzz.sound('/games/sounds/etoile_3.mp3'),
-      ];
+      // this.stars = [
+      //   new buzz.sound('/games/sounds/etoile_1.mp3'),
+      //   new buzz.sound('/games/sounds/etoile_2.mp3'),
+      //   new buzz.sound('/games/sounds/etoile_3.mp3'),
+      // ];
       
       
       // The ball cannot be add on create
@@ -71,9 +71,9 @@ module PingPong {
       this.ball.onLost = this.endGame.bind(this);
       this.ball.onBump = (pos) => {
         this.lyric.next(pos);
-        var r = Math.floor(Math.random()*this.stars.length);
-        this.stars[r].stop();
-        this.stars[r].play();
+        // var r = Math.floor(Math.random()*this.stars.length);
+        // this.stars[r].stop();
+        // this.stars[r].play();
       };
       
       this.physic.addBody(this.ball.getBody());

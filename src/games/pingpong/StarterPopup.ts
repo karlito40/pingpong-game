@@ -14,7 +14,7 @@ module PingPong {
     
     protected logoContainer: PIXI.Container;
     protected recordContainer: PIXI.Container;
-    protected scoreContainer: PIXI.Container;
+    // protected scoreContainer: PIXI.Container;
     protected platformerContainer: PIXI.Container;
     protected dialogueContainer: PIXI.Graphics;
     protected pencil: PIXI.Sprite;
@@ -51,8 +51,8 @@ module PingPong {
       this.recordContainer = this.buildRecord();
       this.addChild(this.recordContainer);
       
-      this.scoreContainer = this.buildScore();
-      this.addChild(this.scoreContainer);
+      // this.scoreContainer = this.buildScore();
+      // this.addChild(this.scoreContainer);
       
       this.platformerContainer = this.buildPlatformer();
       this.addChild(this.platformerContainer);
@@ -89,7 +89,7 @@ module PingPong {
       tl.to(this.platformerContainer, 0.15, {alpha:0}, 'start');
       tl.to([
         this.recordContainer.position,
-        this.scoreContainer.position
+        // this.scoreContainer.position
       ], 0.13, {y: -200}, 'start');
       tl.to([
         this.character.position, 
@@ -156,7 +156,8 @@ module PingPong {
       
       var container = this.buildTextContainer(this.record.toString(), 'gold');
       container.position.y -= 5;
-      container.position.x = Share.get('width')/2 - container.width - 2;
+      // container.position.x = Share.get('width')/2 - container.width - 2;
+      container.position.x = Share.get('width')/2 - container.width/2 + 3;
       
       return container;
     }

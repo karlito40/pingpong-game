@@ -5,7 +5,7 @@
 /// <reference path="./games/pingpong/App.ts"/>
 
 var app = new PingPong.App();
-app.getLoaderEntry()
-    .add(new Asset.Image('fantouch', '/games/images/fantouch.png'));
+// app.getLoaderEntry()
+    // .add(new Asset.Image('fantouch', '/games/images/fantouch.png'));
     
 app.start();

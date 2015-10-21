@@ -27,17 +27,22 @@ module PingPong {
       var splashScene = new SplashScene(true, 0x000000);
       splashScene.onClose = gameScene.start.bind(gameScene);
       
-      var fantouchScene = new Scene.FantouchScene();
-      fantouchScene.onClose = splashScene.start.bind(splashScene);
-  
+      // var fantouchScene = new Scene.FantouchScene();
+      // fantouchScene.onClose = splashScene.start.bind(splashScene);
+      
+      this.loaderEntry.add(
+        new Asset.Image('youssy-splash', '/games/images/youssy-splash.png')
+      );
+      
       // Load the app asset
       this.loaderEntry.load(() => {
         console.log('loader entry complete')
-        fantouchScene.start();  
+        // fantouchScene.start();  
+        splashScene.start();
       
         // Load the game asset
         this.loaderGame
-          .add(new Asset.Image('youssy-splash', '/games/images/youssy-splash.png'))
+          // .add(new Asset.Image('youssy-splash', '/games/images/youssy-splash.png'))
           .add(new Asset.Image('youssy-ball', '/games/images/youssy-ball.png'))
           .add(new Asset.Image('left-gold', '/games/images/left-gold.png'))
           .add(new Asset.Image('repeat-gold', '/games/images/repeat-gold.png'))
@@ -54,7 +59,8 @@ module PingPong {
         
         this.loaderGame.load(() => {
           console.log('loader game complete')
-          fantouchScene.close();
+          // fantouchScene.close();
+          splashScene.close();
         });
         
       });

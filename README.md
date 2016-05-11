@@ -5,12 +5,8 @@
 * [GsapJS](http://greensock.com/gsap)
 
 ## YoussyBall
-... In the old folder you will find the prototype with more options and maybe less lag.
+... You may find the prototype with more options in the old branch.
 
-## Todo
+The prototype is playable [here](https://youssy-ball.herokuapp.com/games/) but it is not the final code. The real game is on a private bitbucket.
 
-2. Use texturepacker... But the customization will be harder
-3. Add a progressive progression
-
-## Scores
-
+![To give you an idea](https://d13yacurqjgara.cloudfront.net/users/729829/screenshots/2249241/ping-pong.gif)
